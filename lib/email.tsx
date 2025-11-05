@@ -7,7 +7,7 @@ export async function sendVerificationEmail(email: string, token: string) {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
     const verificationUrl = `${baseUrl}/auth/verify-email?token=${token}`
 
-    const fromEmail = process.env.RESEND_FROM_EMAIL || "noreply@notifiers.reknur.com"
+    const fromEmail = process.env.RESEND_FROM_EMAIL || "auth@notifiers.reknur.com"
 
     const { data, error } = await resend.emails.send({
       from: fromEmail,
@@ -55,6 +55,16 @@ export async function sendVerificationEmail(email: string, token: string) {
                       </td>
                     </tr>
                   </table>
+                  <!-- Added unsubscribe footer -->
+                  <table width="600" cellpadding="0" cellspacing="0" style="margin-top: 20px;">
+                    <tr>
+                      <td style="text-align: center; padding: 10px;">
+                        <p style="margin: 0; font-size: 12px; color: #999999;">
+                          <a href="{{{RESEND_UNSUBSCRIBE_URL}}}" style="color: #999999; text-decoration: underline;">Unsubscribe</a>
+                        </p>
+                      </td>
+                    </tr>
+                  </table>
                 </td>
               </tr>
             </table>
@@ -95,7 +105,7 @@ export async function sendOrderConfirmationEmail(
   try {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
     const orderUrl = `${baseUrl}/account/orders/${orderId}`
-    const fromEmail = process.env.RESEND_FROM_EMAIL || "noreply@notifiers.reknur.com"
+    const fromEmail = process.env.RESEND_FROM_EMAIL || "orders@notifiers.reknur.com"
 
     // Format currency
     const formatPrice = (amount: number, currency: string) => {
@@ -211,6 +221,16 @@ export async function sendOrderConfirmationEmail(
                       </td>
                     </tr>
                   </table>
+                  <!-- Added unsubscribe footer -->
+                  <table width="600" cellpadding="0" cellspacing="0" style="margin-top: 20px;">
+                    <tr>
+                      <td style="text-align: center; padding: 10px;">
+                        <p style="margin: 0; font-size: 12px; color: #999999;">
+                          <a href="{{{RESEND_UNSUBSCRIBE_URL}}}" style="color: #999999; text-decoration: underline;">Unsubscribe</a>
+                        </p>
+                      </td>
+                    </tr>
+                  </table>
                 </td>
               </tr>
             </table>
@@ -244,7 +264,7 @@ export async function sendOrderStatusUpdateEmail(
   try {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
     const orderUrl = `${baseUrl}/account/orders/${orderId}`
-    const fromEmail = process.env.RESEND_FROM_EMAIL || "noreply@notifiers.reknur.com"
+    const fromEmail = process.env.RESEND_FROM_EMAIL || "orders@notifiers.reknur.com"
 
     // Status-specific messaging
     const statusMessages: Record<string, { title: string; message: string; color: string }> = {
@@ -350,6 +370,16 @@ export async function sendOrderStatusUpdateEmail(
                       </td>
                     </tr>
                   </table>
+                  <!-- Added unsubscribe footer -->
+                  <table width="600" cellpadding="0" cellspacing="0" style="margin-top: 20px;">
+                    <tr>
+                      <td style="text-align: center; padding: 10px;">
+                        <p style="margin: 0; font-size: 12px; color: #999999;">
+                          <a href="{{{RESEND_UNSUBSCRIBE_URL}}}" style="color: #999999; text-decoration: underline;">Unsubscribe</a>
+                        </p>
+                      </td>
+                    </tr>
+                  </table>
                 </td>
               </tr>
             </table>
@@ -373,7 +403,7 @@ export async function sendPasswordResetEmail(email: string, token: string) {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
     const resetUrl = `${baseUrl}/auth/reset-password?token=${token}`
 
-    const fromEmail = process.env.RESEND_FROM_EMAIL || "noreply@notifiers.reknur.com"
+    const fromEmail = process.env.RESEND_FROM_EMAIL || "auth@notifiers.reknur.com"
 
     const { data, error } = await resend.emails.send({
       from: fromEmail,
@@ -417,6 +447,16 @@ export async function sendPasswordResetEmail(email: string, token: string) {
                       <td style="padding: 20px 40px 40px 40px; text-align: center; border-top: 1px solid #eeeeee;">
                         <p style="margin: 0; font-size: 14px; line-height: 20px; color: #999999;">
                           This link will expire in 1 hour. If you didn't request a password reset, you can safely ignore this email.
+                        </p>
+                      </td>
+                    </tr>
+                  </table>
+                  <!-- Added unsubscribe footer -->
+                  <table width="600" cellpadding="0" cellspacing="0" style="margin-top: 20px;">
+                    <tr>
+                      <td style="text-align: center; padding: 10px;">
+                        <p style="margin: 0; font-size: 12px; color: #999999;">
+                          <a href="{{{RESEND_UNSUBSCRIBE_URL}}}" style="color: #999999; text-decoration: underline;">Unsubscribe</a>
                         </p>
                       </td>
                     </tr>
