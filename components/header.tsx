@@ -40,14 +40,14 @@ export function Header({ user, cartItemCount, cartItems }: HeaderProps) {
             {user ? (
               <Link href="/account">
                 <Button variant="ghost" size="icon" className="hover:bg-muted">
-                  <User className="h-5 w-5 text-foreground" />
+                  <User className="h-5 w-5" />
                 </Button>
               </Link>
             ) : (
               <Button
                 variant="ghost"
                 onClick={() => setAuthDialogOpen(true)}
-                className="hidden sm:inline-flex hover:bg-muted text-foreground font-medium"
+                className="hidden sm:inline-flex hover:bg-muted"
               >
                 Sign In
               </Button>
