@@ -55,9 +55,16 @@ export function ProductCard({ product, onCartOpen }: ProductCardProps) {
     })
   }
 
+  function handleCardClick() {
+    setShowDetails(true)
+  }
+
   return (
     <>
-      <Card className="group overflow-hidden border-border/50 hover:border-primary/20 transition-all duration-300 h-full flex flex-col">
+      <Card
+        className="group overflow-hidden border-border/50 hover:border-primary/20 transition-all duration-300 h-full flex flex-col cursor-pointer"
+        onClick={handleCardClick}
+      >
         <CardContent className="p-0 flex flex-col h-full">
           <div className="relative aspect-[4/5] overflow-hidden bg-muted">
             <Image
@@ -84,7 +91,9 @@ export function ProductCard({ product, onCartOpen }: ProductCardProps) {
                 {product.onSale && formattedOriginalPrice && (
                   <p className="text-sm text-muted-foreground line-through">{formattedOriginalPrice}</p>
                 )}
-                <p className={`text-xl sm:text-2xl font-serif ${product.onSale ? "text-destructive" : ""}`}>
+                <p
+                  className={`text-xl sm:text-2xl font-serif ${product.onSale ? "text-red-600 dark:text-red-400" : ""}`}
+                >
                   {formattedPrice}
                 </p>
               </div>
@@ -92,7 +101,10 @@ export function ProductCard({ product, onCartOpen }: ProductCardProps) {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setShowDetails(true)}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setShowDetails(true)
+                  }}
                   className="flex-1 sm:flex-none hover:bg-muted hover:border-primary/40 hover:text-muted-background"
                 >
                   Details
@@ -115,7 +127,10 @@ export function ProductCard({ product, onCartOpen }: ProductCardProps) {
                 </Button>
                 <Button
                   size="sm"
-                  onClick={() => setShowCheckout(true)}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setShowCheckout(true)
+                  }}
                   className="hidden sm:inline-flex border hover:border-accent-foreground/40"
                 >
                   Buy Now
@@ -153,7 +168,9 @@ export function ProductCard({ product, onCartOpen }: ProductCardProps) {
                   {product.onSale && formattedOriginalPrice && (
                     <p className="text-lg text-muted-foreground line-through">{formattedOriginalPrice}</p>
                   )}
-                  <p className={`text-2xl sm:text-3xl font-serif ${product.onSale ? "text-destructive" : ""}`}>
+                  <p
+                    className={`text-2xl sm:text-3xl font-serif ${product.onSale ? "text-red-600 dark:text-red-400" : ""}`}
+                  >
                     {formattedPrice}
                   </p>
                 </div>

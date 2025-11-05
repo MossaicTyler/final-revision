@@ -45,12 +45,12 @@ export function AccountDeletion({ hasOAuthProvider }: { hasOAuthProvider: boolea
   }
 
   return (
-    <div className="border border-red-200 rounded-lg p-6 space-y-4 bg-red-50/50">
+    <div className="p-6 space-y-4 opacity-100 bg-accent border-2 rounded-lg border-destructive border-dotted">
       <div className="flex items-start gap-3">
         <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5" />
         <div className="flex-1">
-          <h3 className="text-xl font-serif text-red-900">Delete Account</h3>
-          <p className="text-sm text-red-700 mt-1">
+          <h3 className="text-xl font-serif text-red-900 bg-accent">Delete Account</h3>
+          <p className="text-red-700 mt-1 text-sm">
             Permanently delete your account and all associated data. This action cannot be undone.
           </p>
         </div>
