@@ -44,13 +44,24 @@ export function Header({ user, cartItemCount, cartItems }: HeaderProps) {
                 </Button>
               </Link>
             ) : (
-              <Button
-                variant="ghost"
-                onClick={() => setAuthDialogOpen(true)}
-                className="hidden sm:inline-flex hover:bg-muted"
-              >
-                Sign In
-              </Button>
+              <>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setAuthDialogOpen(true)}
+                  className="sm:hidden hover:bg-muted"
+                  aria-label="Sign In"
+                >
+                  <User className="h-5 w-5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={() => setAuthDialogOpen(true)}
+                  className="hidden sm:inline-flex hover:bg-muted"
+                >
+                  Sign In
+                </Button>
+              </>
             )}
           </nav>
         </div>
