@@ -3,6 +3,7 @@
 import { sql } from "@/lib/db"
 import { getCurrentUser } from "@/lib/auth"
 import { revalidatePath } from "next/cache"
+import { sendOrderStatusUpdateEmail } from "@/lib/email"
 
 // Simple admin check - in production, use proper role-based auth
 async function isAdmin() {
@@ -152,29 +153,67 @@ export async function updateOrderTracking(
       values.push(data.notes)
     }
 
-    // Always update the updated_at timestamp
     updates.push(`updated_at = NOW()`)
 
-    // Handle status separately to track history
     if (data.status) {
-      const currentOrder = await sql`SELECT status FROM orders WHERE id = ${orderId}`
+      const currentOrder = await sql`SELECT status, customer_email, customer_name FROM orders o 
+        LEFT JOIN users u ON o.user_id = u.id 
+        WHERE o.id = ${orderId}`
+
       if (currentOrder.length > 0) {
         const oldStatus = currentOrder[0].status
+        const customerEmail = currentOrder[0].customer_email
 
         updates.push(`status = $${paramIndex++}`)
         values.push(data.status)
 
-        // Add to status history
         await sql`
           INSERT INTO order_status_history (order_id, old_status, new_status, changed_by, notes)
           VALUES (${orderId}, ${oldStatus}, ${data.status}, 'admin', ${data.notes || null})
         `
 
-        // Update shipped_at or delivered_at timestamps
+        let trackingDescription = ""
         if (data.status === "shipped" && oldStatus !== "shipped") {
           updates.push(`shipped_at = NOW()`)
+          trackingDescription = `Package shipped${data.carrier ? ` via ${data.carrier}` : ""}${data.tracking_number ? `. Tracking: ${data.tracking_number}` : ""}`
+
+          await sql`
+            INSERT INTO order_tracking_events (order_id, status, description, event_time)
+            VALUES (${orderId}, 'Shipped', ${trackingDescription}, NOW())
+          `
         } else if (data.status === "delivered" && oldStatus !== "delivered") {
           updates.push(`delivered_at = NOW()`)
+          trackingDescription = "Package delivered successfully"
+
+          await sql`
+            INSERT INTO order_tracking_events (order_id, status, description, event_time)
+            VALUES (${orderId}, 'Delivered', ${trackingDescription}, NOW())
+          `
+        } else if (data.status === "cancelled" && oldStatus !== "cancelled") {
+          trackingDescription = `Order cancelled${data.notes ? `: ${data.notes}` : ""}`
+
+          await sql`
+            INSERT INTO order_tracking_events (order_id, status, description, event_time)
+            VALUES (${orderId}, 'Cancelled', ${trackingDescription}, NOW())
+          `
+        } else if (data.status === "processing" && oldStatus !== "processing") {
+          trackingDescription = "Order is being processed"
+
+          await sql`
+            INSERT INTO order_tracking_events (order_id, status, description, event_time)
+            VALUES (${orderId}, 'Processing', ${trackingDescription}, NOW())
+          `
+        }
+
+        if (customerEmail && oldStatus !== data.status) {
+          await sendOrderStatusUpdateEmail(customerEmail, orderId, {
+            customerName: currentOrder[0].customer_name || "Customer",
+            oldStatus,
+            newStatus: data.status,
+            trackingNumber: data.tracking_number,
+            carrier: data.carrier,
+            estimatedDelivery: data.estimated_delivery,
+          })
         }
       }
     }
@@ -183,19 +222,6 @@ export async function updateOrderTracking(
       values.push(orderId)
       const query = `UPDATE orders SET ${updates.join(", ")} WHERE id = $${paramIndex}`
       await sql.query(query, values)
-    }
-
-    // Add tracking event if tracking number was added/updated
-    if (data.tracking_number && data.status === "shipped") {
-      await sql`
-        INSERT INTO order_tracking_events (order_id, status, description, event_time)
-        VALUES (
-          ${orderId},
-          'Shipped',
-          ${`Package shipped via ${data.carrier || "carrier"}. Tracking: ${data.tracking_number}`},
-          NOW()
-        )
-      `
     }
 
     revalidatePath("/admin/orders")

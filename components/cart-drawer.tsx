@@ -39,6 +39,8 @@ export function CartDrawer({ initialItems, cartItemCount }: CartDrawerProps) {
 
   useEffect(() => {
     setItems(initialItems)
+    const totalCount = initialItems.reduce((sum, item) => sum + item.quantity, 0)
+    setCartCount(totalCount)
   }, [initialItems])
 
   useEffect(() => {

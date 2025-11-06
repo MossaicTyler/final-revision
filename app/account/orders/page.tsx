@@ -93,12 +93,19 @@ export default async function OrdersPage() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-sm truncate">{item.product_name}</p>
-                        <p className="text-xs text-muted-foreground">Qty: {item.quantity}</p>
+                        <p className="text-xs text-muted-foreground">Quantity: {item.quantity}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Intl.NumberFormat("en-GB", {
+                            style: "currency",
+                            currency: order.currency,
+                          }).format(item.price / 100)}{" "}
+                          each
+                        </p>
                       </div>
                       <p className="text-sm font-medium">
-                        {new Intl.NumberFormat("en-US", {
+                        {new Intl.NumberFormat("en-GB", {
                           style: "currency",
-                          currency: "USD",
+                          currency: order.currency,
                         }).format((item.price * item.quantity) / 100)}
                       </p>
                     </div>
