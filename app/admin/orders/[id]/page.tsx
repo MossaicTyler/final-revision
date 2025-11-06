@@ -91,9 +91,9 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
                       <div className="flex-1 space-y-1">
                         <p className="font-medium text-sm">{item.product_name}</p>
                         <p className="text-xs text-muted-foreground">Qty: {item.quantity}</p>
-                        <p className="text-xs font-medium">${(item.price / 100).toFixed(2)} each</p>
+                        <p className="text-xs font-medium">£{(item.price / 100).toFixed(2)} each</p>
                       </div>
-                      <p className="font-semibold text-sm">${((item.price * item.quantity) / 100).toFixed(2)}</p>
+                      <p className="font-semibold text-sm">£{((item.price * item.quantity) / 100).toFixed(2)}</p>
                     </div>
                   ))}
                 </div>

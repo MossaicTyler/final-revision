@@ -17,12 +17,12 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
 
   const tracking = await getOrderTracking(Number.parseInt(id))
 
-  const formattedTotal = new Intl.NumberFormat("en-US", {
+  const formattedTotal = new Intl.NumberFormat("en-GB", {
     style: "currency",
     currency: order.currency,
   }).format(order.total_amount / 100)
 
-  const formattedDate = new Date(order.created_at).toLocaleDateString("en-US", {
+  const formattedDate = new Date(order.created_at).toLocaleDateString("en-GB", {
     year: "numeric",
     month: "long",
     day: "numeric",
@@ -100,7 +100,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                         <p className="text-sm font-medium">
                           {new Intl.NumberFormat("en-GB", {
                             style: "currency",
-                            currency: order.currency,
+                            currency: "GBP",
                           }).format(item.price / 100)}{" "}
                           each
                         </p>
@@ -108,7 +108,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                       <p className="font-semibold">
                         {new Intl.NumberFormat("en-GB", {
                           style: "currency",
-                          currency: order.currency,
+                          currency: "GBP",
                         }).format((item.price * item.quantity) / 100)}
                       </p>
                     </div>
@@ -129,6 +129,26 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                   <span>Total</span>
                   <span>{formattedTotal}</span>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Shipping Address</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-1">
+                <p className="font-medium">{order.shipping_name}</p>
+                <p className="text-sm text-muted-foreground">{order.shipping_address_line1}</p>
+                {order.shipping_address_line2 && (
+                  <p className="text-sm text-muted-foreground">{order.shipping_address_line2}</p>
+                )}
+                <p className="text-sm text-muted-foreground">
+                  {order.shipping_city}, {order.shipping_state} {order.shipping_postal_code}
+                </p>
+                <p className="text-sm text-muted-foreground">{order.shipping_country}</p>
+                {order.shipping_phone && <p className="text-sm text-muted-foreground">{order.shipping_phone}</p>}
               </div>
             </CardContent>
           </Card>
@@ -157,7 +177,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                     <div className="space-y-2">
                       <p className="text-sm text-muted-foreground">Estimated Delivery</p>
                       <p className="font-medium">
-                        {new Date(tracking.estimated_delivery).toLocaleDateString("en-US", {
+                        {new Date(tracking.estimated_delivery).toLocaleDateString("en-GB", {
                           year: "numeric",
                           month: "long",
                           day: "numeric",
@@ -194,7 +214,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                             <p className="text-xs text-muted-foreground mt-1">{event.description}</p>
                           )}
                           <p className="text-xs text-muted-foreground mt-1">
-                            {new Date(event.event_time).toLocaleString("en-US", {
+                            {new Date(event.event_time).toLocaleString("en-GB", {
                               month: "short",
                               day: "numeric",
                               hour: "2-digit",

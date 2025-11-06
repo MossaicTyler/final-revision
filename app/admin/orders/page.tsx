@@ -121,7 +121,7 @@ export default async function AdminOrdersPage({
                 <div className="space-y-2">
                   <p className="text-xs text-muted-foreground uppercase tracking-wider">Revenue (30d)</p>
                   <p className="text-2xl font-semibold tabular-nums">
-                    ${((stats.total_revenue || 0) / 100).toLocaleString()}
+                    £{((stats.total_revenue || 0) / 100).toLocaleString()}
                   </p>
                 </div>
               </CardContent>

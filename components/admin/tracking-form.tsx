@@ -39,13 +39,10 @@ export function TrackingForm({ order }: { order: any }) {
     }
   }
 
-  const showTrackingFields = formData.status === "shipped" || formData.status === "delivered"
-  const showEstimatedDelivery = formData.status === "shipped"
-
   return (
     <Card className="bg-card/50 border-border/40 sticky top-6">
       <CardHeader>
-        <CardTitle className="text-lg font-medium">Update Order Status</CardTitle>
+        <CardTitle className="text-lg font-medium">Update Tracking</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -67,66 +64,54 @@ export function TrackingForm({ order }: { order: any }) {
             </select>
           </div>
 
-          {showTrackingFields && (
-            <>
-              <div className="space-y-2">
-                <Label htmlFor="tracking" className="text-xs uppercase tracking-wider text-muted-foreground">
-                  Tracking Number
-                </Label>
-                <Input
-                  id="tracking"
-                  value={formData.tracking_number}
-                  onChange={(e) => setFormData({ ...formData, tracking_number: e.target.value })}
-                  placeholder="1Z999AA10123456784"
-                  className="bg-background/50 border-border/40"
-                />
-              </div>
+          <div className="space-y-2">
+            <Label htmlFor="tracking" className="text-xs uppercase tracking-wider text-muted-foreground">
+              Tracking Number
+            </Label>
+            <Input
+              id="tracking"
+              value={formData.tracking_number}
+              onChange={(e) => setFormData({ ...formData, tracking_number: e.target.value })}
+              placeholder="1Z999AA10123456784"
+              className="bg-background/50 border-border/40"
+            />
+          </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="carrier" className="text-xs uppercase tracking-wider text-muted-foreground">
-                  Carrier
-                </Label>
-                <Input
-                  id="carrier"
-                  value={formData.carrier}
-                  onChange={(e) => setFormData({ ...formData, carrier: e.target.value })}
-                  placeholder="UPS, USPS, FedEx, DHL"
-                  className="bg-background/50 border-border/40"
-                />
-              </div>
-            </>
-          )}
+          <div className="space-y-2">
+            <Label htmlFor="carrier" className="text-xs uppercase tracking-wider text-muted-foreground">
+              Carrier
+            </Label>
+            <Input
+              id="carrier"
+              value={formData.carrier}
+              onChange={(e) => setFormData({ ...formData, carrier: e.target.value })}
+              placeholder="UPS, USPS, FedEx, DHL"
+              className="bg-background/50 border-border/40"
+            />
+          </div>
 
-          {showEstimatedDelivery && (
-            <div className="space-y-2">
-              <Label htmlFor="delivery" className="text-xs uppercase tracking-wider text-muted-foreground">
-                Estimated Delivery
-              </Label>
-              <Input
-                id="delivery"
-                type="date"
-                value={formData.estimated_delivery}
-                onChange={(e) => setFormData({ ...formData, estimated_delivery: e.target.value })}
-                className="bg-background/50 border-border/40"
-              />
-            </div>
-          )}
+          <div className="space-y-2">
+            <Label htmlFor="delivery" className="text-xs uppercase tracking-wider text-muted-foreground">
+              Estimated Delivery
+            </Label>
+            <Input
+              id="delivery"
+              type="date"
+              value={formData.estimated_delivery}
+              onChange={(e) => setFormData({ ...formData, estimated_delivery: e.target.value })}
+              className="bg-background/50 border-border/40"
+            />
+          </div>
 
           <div className="space-y-2">
             <Label htmlFor="notes" className="text-xs uppercase tracking-wider text-muted-foreground">
-              Notes {formData.status === "cancelled" && "(Required for cancellation)"}
+              Notes
             </Label>
             <Textarea
               id="notes"
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              placeholder={
-                formData.status === "cancelled"
-                  ? "Reason for cancellation..."
-                  : formData.status === "delivered"
-                    ? "Delivery notes..."
-                    : "Additional notes..."
-              }
+              placeholder="Additional notes..."
               rows={3}
               className="bg-background/50 border-border/40 resize-none"
             />
@@ -144,7 +129,7 @@ export function TrackingForm({ order }: { order: any }) {
                 Updated!
               </>
             ) : (
-              "Update Order Status"
+              "Update Tracking"
             )}
           </Button>
         </form>
