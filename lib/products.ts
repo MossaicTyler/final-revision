@@ -22,7 +22,12 @@ export const PRODUCTS: Product[] = [
     category: "Stationery",
     details:
       "Crafted from full-grain Italian leather with 200 pages of acid-free paper. Each journal is hand-stitched by master craftsmen.",
-    images: ["/luxury-leather-journal-artisan.jpg"],
+    images: [
+      "/luxury-leather-journal-artisan.jpg",
+      "/luxury-leather-journal-detail-stitching.jpg",
+      "/luxury-leather-journal-open-pages.jpg",
+      "/luxury-leather-journal-texture-closeup.jpg",
+    ],
   },
   {
     id: "ceramic-tea-set",
