@@ -8,6 +8,7 @@ export interface Product {
   details?: string
   originalPriceInCents?: number // Original price before discount
   onSale?: boolean // Whether product is on sale
+  maxStock?: number // Maximum available quantity (defaults to 100)
 }
 
 // This is the source of truth for all products.
@@ -15,154 +16,152 @@ export interface Product {
 // IDs passed to the checkout session should be the same as IDs from this array.
 export const PRODUCTS: Product[] = [
   {
-    id: "artisan-leather-journal",
-    name: "Artisan Leather Journal",
-    description: "Hand-stitched Italian leather journal with premium paper",
-    priceInCents: 18900, // £189.00
-    category: "Stationery",
+    id: "mochi-pig",
+    name: "Mochi the Running Pig",
+    description: "Mochi the Running Pig animated by momentum",
+    priceInCents: 2500, // £25.00
+    category: "Running Boars",
+    details: "Not a toy, but a totem of tenderness, designed to elevate the everyday.",
+    images: ["/mochi.jpg", "/mochi-2.jpg"],
+    maxStock: 50,
+  },
+  {
+    id: "speckles-the-spotted-pig",
+    name: "Speckles the Spotted Pig",
+    description: "Speckles the Spotted Pig animated by momentum!",
+    priceInCents: 2500, // £25.00 (was £31.00)
+    originalPriceInCents: 3100,
+    onSale: true,
+    category: "Running Boars",
     details:
-      "Crafted from full-grain Italian leather with 200 pages of acid-free paper. Each journal is hand-stitched by master craftsmen.",
-    images: [
-      "/luxury-leather-journal-artisan.jpg",
-      "/luxury-leather-journal-detail-stitching.jpg",
-      "/luxury-leather-journal-open-pages.jpg",
-      "/luxury-leather-journal-texture-closeup.jpg",
-    ],
+      'Meet the Spotted Trotter, the pinnacle of plush artistry from our acclaimed "Running Series." This is not merely a toy; it is a sculptural piece, a tactile comfort, and a whimsical narrative captured in the most exquisite materials.',
+    images: ["/speckles-the-spotted-pig.jpg", "/speckles-the-spotted-pig-2.jpg"],
+    maxStock: 30,
   },
   {
-    id: "ceramic-tea-set",
-    name: "Handmade Ceramic Tea Set",
-    description: "Exclusive 5-piece ceramic tea set by renowned potter",
-    priceInCents: 27900, // £279.00 (was £349.00)
-    originalPriceInCents: 34900,
+    id: "gullin-the-walnut-boar",
+    name: "Gullin the Walnut Boar",
+    description: "Gullin the Walnut Boar animated by momentum!",
+    priceInCents: 2600, // £26.00 (was £35.00)
+    originalPriceInCents: 3500,
     onSale: true,
-    category: "Home",
-    details: "Each piece is individually thrown and glazed by hand. Includes teapot, four cups, and presentation box.",
-    images: ["/luxury-ceramic-tea-set-handmade.jpg"],
-  },
-  {
-    id: "brass-desk-lamp",
-    name: "Heritage Brass Desk Lamp",
-    description: "Vintage-inspired solid brass lamp with Edison bulb",
-    priceInCents: 42900, // £429.00
-    category: "Lighting",
+    category: "Running Boars",
     details:
-      "Solid brass construction with hand-applied patina finish. Includes vintage-style Edison bulb and dimmer switch.",
-    images: ["/vintage-brass-desk-lamp-luxury.jpg"],
+      "Gullin settles into your arms with a grounding, comforting presence, perfect for alleviating anxiety or as a sleep companion.",
+    images: ["/gullin-the-walnut-boar.jpg"],
+    maxStock: 25,
   },
   {
-    id: "wool-throw-blanket",
-    name: "Merino Wool Throw",
-    description: "Pure merino wool throw blanket, hand-woven",
-    priceInCents: 19900, // £199.00 (was £289.00)
-    originalPriceInCents: 28900,
+    id: "bartholomew-the-barley-boar",
+    name: "Bartholomew the Barley Boar",
+    description: "Bartholomew the Barley Boar animated by momentum!",
+    priceInCents: 2600, // £26.00 (was £35.00)
+    originalPriceInCents: 3500,
     onSale: true,
-    category: "Textiles",
-    details: "Woven from 100% merino wool sourced from sustainable farms. Natural dyes create unique color variations.",
-    images: ["/luxury-merino-wool-throw-blanket.jpg"],
+    category: "Running Boars",
+    details: 'Bartho can be captured in a graceful, dynamic "trot," his pose is one of gentle momentum and quiet joy.',
+    images: ["/bartholomew-the-barley-boar.jpg"],
+    maxStock: 25,
   },
   {
-    id: "fountain-pen",
-    name: "Limited Edition Fountain Pen",
-    description: "Handcrafted fountain pen with 18k gold nib",
-    priceInCents: 89900, // £899.00
-    category: "Stationery",
-    details: "Precision-engineered with ebonite body and 18k gold nib. Limited to 500 pieces worldwide.",
-    images: ["/luxury-fountain-pen-gold-nib.jpg"],
+    id: "sunny-charm",
+    name: "Sunny Charm",
+    description: "Not merely a plush, but a portable sunbeam",
+    priceInCents: 1500, // £15.00
+    category: "Charms",
+    details: "A treasured token designed to dispel grey skies and bring a touch of handmade warmth to every moment.",
+    images: ["/sunny-charm.jpg"],
+    maxStock: 100,
   },
   {
-    id: "wooden-cutting-board",
-    name: "Walnut Cutting Board",
-    description: "End-grain walnut cutting board with brass handles",
-    priceInCents: 17900, // £179.00 (was £249.00)
-    originalPriceInCents: 24900,
-    onSale: true,
-    category: "Kitchen",
-    details: "Crafted from sustainably harvested black walnut. End-grain construction protects knife edges.",
-    images: ["/luxury-walnut-cutting-board-brass.jpg"],
+    id: "sunniette-red-bow-charm",
+    name: "Sunniette Charm (Red Bow)",
+    description: "Not merely a plush, but a portable sunbeam",
+    priceInCents: 1500, // £15.00
+    category: "Charms",
+    details: "A treasured token designed to dispel grey skies and bring a touch of handmade warmth to every moment.",
+    images: ["/sunniette-red-bow-charm.jpg"],
+    maxStock: 100,
   },
   {
-    id: "silk-scarf",
-    name: "Hand-Painted Silk Scarf",
-    description: "Luxurious silk scarf with hand-painted botanical design",
-    priceInCents: 19900, // £199.00
-    category: "Textiles",
-    details: "100% mulberry silk with hand-painted design. Each scarf is unique with slight variations in pattern.",
-    images: ["/luxury-hand-painted-silk-scarf-botanical.jpg"],
+    id: "sunniette-pink-bow-charm",
+    name: "Sunniette Charm (Pink Bow)",
+    description: "Not merely a plush, but a portable sunbeam",
+    priceInCents: 1800, // £18.00
+    category: "Charms",
+    details: "A treasured token designed to dispel grey skies and bring a touch of handmade warmth to every moment.",
+    images: ["/sunniette-pink-bow-charm.jpg"],
+    maxStock: 100,
   },
   {
-    id: "porcelain-vase",
-    name: "Artisan Porcelain Vase",
-    description: "Hand-thrown porcelain vase with celadon glaze",
-    priceInCents: 32900, // £329.00
-    category: "Home",
-    details: "Traditional celadon glaze technique passed down through generations. Each piece is one-of-a-kind.",
-    images: ["/luxury-artisan-porcelain-vase-celadon-glaze.jpg"],
+    id: "sunniette-brown-bow-charm",
+    name: "Sunniette Charm (Brown Bow)",
+    description: "Not merely a plush, but a portable sunbeam",
+    priceInCents: 1500, // £15.00
+    category: "Charms",
+    details: "A treasured token designed to dispel grey skies and bring a touch of handmade warmth to every moment.",
+    images: ["/sunniette-brown-bow-charm.jpg"],
+    maxStock: 100,
   },
   {
-    id: "leather-briefcase",
-    name: "Executive Leather Briefcase",
-    description: "Full-grain leather briefcase with brass hardware",
-    priceInCents: 39900, // £399.00 (was £549.00)
-    originalPriceInCents: 54900,
-    onSale: true,
-    category: "Accessories",
-    details: "Handcrafted from vegetable-tanned leather. Features multiple compartments and laptop sleeve.",
-    images: ["/luxury-executive-leather-briefcase-brass-hardware.jpg"],
+    id: "sunniette-blue-bow-charm",
+    name: "Sunniette Charm (Blue Bow)",
+    description: "Not merely a plush, but a portable sunbeam",
+    priceInCents: 1500, // £15.00
+    category: "Charms",
+    details: "A treasured token designed to dispel grey skies and bring a touch of handmade warmth to every moment.",
+    images: ["/sunniette-blue-bow-charm.jpg"],
+    maxStock: 100,
   },
   {
-    id: "crystal-decanter",
-    name: "Lead Crystal Decanter",
-    description: "Hand-cut lead crystal decanter with stopper",
-    priceInCents: 39900, // £399.00
-    category: "Home",
-    details: "Traditional hand-cutting techniques create intricate patterns. 24% lead crystal for exceptional clarity.",
-    images: ["/luxury-hand-cut-lead-crystal-decanter.jpg"],
+    id: "sunniette-black-bow-charm",
+    name: "Sunniette Charm (Black Bow)",
+    description: "Not merely a plush, but a portable sunbeam",
+    priceInCents: 1500, // £15.00
+    category: "Charms",
+    details: "A treasured token designed to dispel grey skies and bring a touch of handmade warmth to every moment.",
+    images: ["/sunniette-black-bow-charm.jpg"],
+    maxStock: 100,
   },
   {
-    id: "cashmere-sweater",
-    name: "Pure Cashmere Sweater",
-    description: "Luxurious cashmere sweater from Scottish mills",
-    priceInCents: 42900, // £429.00
-    category: "Textiles",
-    details: "Knitted from Grade A Mongolian cashmere. Timeless design that improves with age.",
-    images: ["/luxury-pure-cashmere-sweater-scottish.jpg"],
+    id: "sunny-swimming-charm",
+    name: "Sunny Charm (Swimming Goggles)",
+    description: "Not merely a plush, but a portable sunbeam",
+    priceInCents: 1800, // £18.00
+    category: "Charms",
+    details: "A treasured token designed to dispel grey skies and bring a touch of handmade warmth to every moment.",
+    images: ["/sunny-swimming-charm.jpg"],
+    maxStock: 100,
   },
   {
-    id: "marble-bookends",
-    name: "Carrara Marble Bookends",
-    description: "Hand-carved Carrara marble bookends with brass inlay",
-    priceInCents: 27900, // £279.00
-    category: "Home",
-    details: "Carved from authentic Carrara marble. Brass geometric inlay adds modern elegance.",
-    images: ["/luxury-carrara-marble-bookends-brass-inlay.jpg"],
+    id: "sunny-football-charm",
+    name: "Sunny Charm (Football)",
+    description: "Not merely a plush, but a portable sunbeam",
+    priceInCents: 1800, // £18.00
+    category: "Charms",
+    details: "A treasured token designed to dispel grey skies and bring a touch of handmade warmth to every moment.",
+    images: ["/sunny-football-charm.jpg"],
+    maxStock: 100,
   },
   {
-    id: "leather-watch-box",
-    name: "Leather Watch Box",
-    description: "Handcrafted leather watch storage for 6 timepieces",
-    priceInCents: 34900, // £349.00
-    category: "Accessories",
-    details: "Premium leather exterior with velvet-lined compartments. Includes lock and key.",
-    images: ["/luxury-leather-watch-box-storage-case.jpg"],
+    id: "sunny-basketball-charm",
+    name: "Sunny Charm (Basketball)",
+    description: "Not merely a plush, but a portable sunbeam",
+    priceInCents: 1800, // £18.00
+    category: "Charms",
+    details: "A treasured token designed to dispel grey skies and bring a touch of handmade warmth to every moment.",
+    images: ["/sunny-basketball-charm.jpg"],
+    maxStock: 100,
   },
   {
-    id: "copper-cookware-set",
-    name: "Copper Cookware Set",
-    description: "Professional copper cookware set with tin lining",
-    priceInCents: 89900, // £899.00
-    category: "Kitchen",
-    details: "Hand-hammered copper with traditional tin lining. Includes 5 essential pieces.",
-    images: ["/luxury-copper-cookware-set-professional.jpg"],
-  },
-  {
-    id: "reading-lamp",
-    name: "Architect's Reading Lamp",
-    description: "Adjustable brass reading lamp with marble base",
-    priceInCents: 37900, // £379.00
-    category: "Lighting",
-    details: "Solid brass construction with weighted marble base. Fully adjustable arm and shade.",
-    images: ["/luxury-brass-reading-lamp-marble-base-architect.jpg"],
+    id: "sunny-table-tennis-charm",
+    name: "Sunny Charm (Table Tennis)",
+    description: "Not merely a plush, but a portable sunbeam",
+    priceInCents: 1800, // £18.00
+    category: "Charms",
+    details: "A treasured token designed to dispel grey skies and bring a touch of handmade warmth to every moment.",
+    images: ["/sunny-table-tennis-charm.jpg"],
+    maxStock: 100,
   },
 ]
 
@@ -195,4 +194,9 @@ export function getProductWithPrice(id: string, priceInCents?: number): Product 
   }
 
   return product
+}
+
+export function getProductMaxStock(productId: string): number {
+  const product = PRODUCTS.find((p) => p.id === productId)
+  return product?.maxStock ?? 100 // Default to 100 if not specified
 }

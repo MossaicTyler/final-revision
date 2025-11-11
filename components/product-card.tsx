@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import type { Product } from "@/lib/products"
 import Checkout from "./checkout"
 import { addToCart } from "@/app/actions/cart"
+import { getProductStock } from "@/lib/inventory"
 import { ShoppingCart, Tag, ChevronLeft, ChevronRight } from "lucide-react"
 import { LoadingSpinner } from "./loading-spinner"
 
@@ -25,6 +26,15 @@ export function ProductCard({ product, onCartOpen }: ProductCardProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [isHovering, setIsHovering] = useState(false)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
+  const [stock, setStock] = useState<number | null>(null)
+
+  useEffect(() => {
+    async function fetchStock() {
+      const currentStock = await getProductStock(product.id)
+      setStock(currentStock)
+    }
+    fetchStock()
+  }, [product.id])
 
   const formattedPrice = new Intl.NumberFormat("en-GB", {
     style: "currency",
@@ -43,15 +53,24 @@ export function ProductCard({ product, onCartOpen }: ProductCardProps) {
       ? Math.round(((product.originalPriceInCents - product.priceInCents) / product.originalPriceInCents) * 100)
       : null
 
+  const isSoldOut = stock !== null && stock === 0
+
   async function handleAddToCart(e: React.MouseEvent) {
     e.preventDefault()
     e.stopPropagation()
 
+    if (isSoldOut) return
+
     startTransition(async () => {
       try {
-        await addToCart(product.id, 1)
-        // Trigger cart drawer to open
-        window.dispatchEvent(new CustomEvent("openCart"))
+        const result = await addToCart(product.id, 1)
+        if (result.error) {
+          alert(result.error)
+          const currentStock = await getProductStock(product.id)
+          setStock(currentStock)
+        } else {
+          window.dispatchEvent(new CustomEvent("openCart"))
+        }
       } catch (error) {
         console.error("Failed to add to cart:", error)
       }
@@ -75,7 +94,6 @@ export function ProductCard({ product, onCartOpen }: ProductCardProps) {
         clearInterval(intervalRef.current)
         intervalRef.current = null
       }
-      // Reset to first image when not hovering
       if (!isHovering) {
         setCurrentImageIndex(0)
       }
@@ -112,11 +130,18 @@ export function ProductCard({ product, onCartOpen }: ProductCardProps) {
               fill
               className="object-cover transition-transform duration-500 group-hover:scale-105"
             />
-            {product.onSale && discountPercentage && (
-              <div className="absolute top-3 right-3 bg-destructive text-destructive-foreground px-3 py-1 rounded-full font-semibold flex items-center gap-1 shadow-lg text-sm">
-                <Tag className="h-3 w-3" />
-                {discountPercentage}% OFF
+            {isSoldOut ? (
+              <div className="absolute top-3 right-3 bg-destructive text-destructive-foreground px-3 py-1 rounded-full font-semibold shadow-lg text-sm">
+                SOLD OUT
               </div>
+            ) : (
+              product.onSale &&
+              discountPercentage && (
+                <div className="absolute top-3 right-3 bg-destructive text-destructive-foreground px-3 py-1 rounded-full font-semibold flex items-center gap-1 shadow-lg text-sm">
+                  <Tag className="h-3 w-3" />
+                  {discountPercentage}% OFF
+                </div>
+              )
             )}
             {hasMultipleImages && (
               <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
@@ -164,15 +189,15 @@ export function ProductCard({ product, onCartOpen }: ProductCardProps) {
                   variant="outline"
                   size="sm"
                   onClick={handleAddToCart}
-                  disabled={isPending}
-                  className="flex-1 sm:flex-none hover:bg-muted hover:border-primary/40 hover:text-muted-background bg-transparent"
+                  disabled={isPending || isSoldOut}
+                  className="flex-1 sm:flex-none hover:bg-muted hover:border-primary/40 hover:text-muted-background bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isPending ? (
                     <LoadingSpinner size="small" />
                   ) : (
                     <>
                       <ShoppingCart className="h-4 w-4 sm:mr-1" />
-                      <span className="hidden sm:inline">Add</span>
+                      <span className="hidden sm:inline">{isSoldOut ? "Sold Out" : "Add"}</span>
                     </>
                   )}
                 </Button>
@@ -182,9 +207,10 @@ export function ProductCard({ product, onCartOpen }: ProductCardProps) {
                     e.stopPropagation()
                     setShowCheckout(true)
                   }}
-                  className="hidden sm:inline-flex border hover:border-accent-foreground/40"
+                  disabled={isSoldOut}
+                  className="hidden sm:inline-flex border hover:border-accent-foreground/40 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Buy Now
+                  {isSoldOut ? "Sold Out" : "Buy Now"}
                 </Button>
               </div>
             </div>
@@ -213,11 +239,18 @@ export function ProductCard({ product, onCartOpen }: ProductCardProps) {
                 fill
                 className="object-cover"
               />
-              {product.onSale && discountPercentage && (
-                <div className="absolute top-4 right-4 bg-destructive text-destructive-foreground px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-2 shadow-lg">
-                  <Tag className="h-4 w-4" />
-                  {discountPercentage}% OFF
+              {isSoldOut ? (
+                <div className="absolute top-4 right-4 bg-destructive text-destructive-foreground px-4 py-2 rounded-full text-sm font-semibold shadow-lg">
+                  SOLD OUT
                 </div>
+              ) : (
+                product.onSale &&
+                discountPercentage && (
+                  <div className="absolute top-4 right-4 bg-destructive text-destructive-foreground px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-2 shadow-lg">
+                    <Tag className="h-4 w-4" />
+                    {discountPercentage}% OFF
+                  </div>
+                )
               )}
 
               {hasMultipleImages && (
@@ -291,6 +324,11 @@ export function ProductCard({ product, onCartOpen }: ProductCardProps) {
                 <h4 className="font-semibold mb-2">Details</h4>
                 <p className="text-sm text-muted-foreground leading-relaxed">{product.details}</p>
               </div>
+              {stock !== null && stock <= 10 && stock > 0 && (
+                <div className="text-sm text-orange-600 dark:text-orange-400 font-medium">
+                  Only {stock} left in stock!
+                </div>
+              )}
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-4 border-t">
                 <div className="flex flex-col">
                   {product.onSale && formattedOriginalPrice && (
@@ -306,8 +344,8 @@ export function ProductCard({ product, onCartOpen }: ProductCardProps) {
                   <Button
                     variant="outline"
                     onClick={handleAddToCart}
-                    disabled={isPending}
-                    className="flex-1 sm:flex-none bg-transparent hover:bg-muted"
+                    disabled={isPending || isSoldOut}
+                    className="flex-1 sm:flex-none bg-transparent hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isPending ? (
                       <>
@@ -317,7 +355,7 @@ export function ProductCard({ product, onCartOpen }: ProductCardProps) {
                     ) : (
                       <>
                         <ShoppingCart className="h-4 w-4 mr-2" />
-                        Add to Cart
+                        {isSoldOut ? "Sold Out" : "Add to Cart"}
                       </>
                     )}
                   </Button>
@@ -326,9 +364,10 @@ export function ProductCard({ product, onCartOpen }: ProductCardProps) {
                       setShowDetails(false)
                       setShowCheckout(true)
                     }}
-                    className="flex-1 sm:flex-none"
+                    disabled={isSoldOut}
+                    className="flex-1 sm:flex-none disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Buy Now
+                    {isSoldOut ? "Sold Out" : "Buy Now"}
                   </Button>
                 </div>
               </div>

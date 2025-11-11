@@ -35,7 +35,7 @@ async function seedProducts() {
       await stripe.prices.create({
         product: stripeProduct.id,
         unit_amount: product.priceInCents,
-        currency: "usd",
+        currency: "gbp",
       })
 
       console.log(`[v0] Created product: ${product.name}`)

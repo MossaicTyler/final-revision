@@ -2,9 +2,15 @@
 
 import { sql } from "@/lib/db"
 import { getCurrentUser, ensureGuestSession } from "@/lib/auth"
+import { isProductInStock } from "@/lib/inventory"
 
 export async function addToCart(productId: string, quantity = 1) {
   try {
+    const inStock = await isProductInStock(productId, quantity)
+    if (!inStock) {
+      return { error: "Product is out of stock" }
+    }
+
     const user = await getCurrentUser()
     const userId = user?.id
     const sessionId = !userId ? await ensureGuestSession() : null
@@ -25,8 +31,13 @@ export async function addToCart(productId: string, quantity = 1) {
         `
 
     if (existing.length > 0) {
-      // Update quantity
       const newQuantity = existing[0].quantity + quantity
+      const hasStock = await isProductInStock(productId, newQuantity)
+      if (!hasStock) {
+        return { error: "Not enough stock available" }
+      }
+
+      // Update quantity
       await sql`
         UPDATE cart_items 
         SET quantity = ${newQuantity}, updated_at = NOW()
@@ -71,6 +82,20 @@ export async function updateCartQuantity(cartItemId: number, quantity: number) {
   try {
     if (quantity <= 0) {
       return removeFromCart(cartItemId)
+    }
+
+    const cartItem = await sql`
+      SELECT product_id FROM cart_items WHERE id = ${cartItemId}
+    `
+
+    if (cartItem.length === 0) {
+      return { error: "Cart item not found" }
+    }
+
+    const productId = cartItem[0].product_id
+    const hasStock = await isProductInStock(productId, quantity)
+    if (!hasStock) {
+      return { error: "Not enough stock available" }
     }
 
     await sql`
