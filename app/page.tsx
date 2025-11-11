@@ -35,7 +35,7 @@ export default function Home() {
     "@type": "WebSite",
     name: "reknur",
     description:
-      "Discover exceptional, handcrafted luxury items curated for those who appreciate quality and craftsmanship",
+      "Discover exceptional, handcrafted plushies curated for those who appreciate quality and limited-edition collectibles",
     url: process.env.NEXT_PUBLIC_BASE_URL || "https://www.rezzyfrier.vercel.app",
     potentialAction: {
       "@type": "SearchAction",
@@ -140,15 +140,15 @@ export default function Home() {
               className="text-4xl sm:text-5xl lg:text-7xl font-serif mb-6 sm:mb-8 text-balance leading-tight transition-all duration-700 ease-out"
               style={{ opacity: 0, transform: "translateY(30px)" }}
             >
-              Discover the Extraordinary
+              Collectible Plushies, Crafted with Care
             </h2>
             <p
               ref={subtitleRef}
               className="text-base sm:text-lg lg:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-8 transition-all duration-700 ease-out"
               style={{ opacity: 0, transform: "translateY(30px)" }}
             >
-              A carefully curated collection of exceptional items, each chosen for its craftsmanship, quality, and
-              timeless appeal.
+              A carefully curated collection of limited-edition plushies, each handcrafted for collectors who appreciate
+              quality, whimsy, and extraordinary design.
             </p>
             <button
               ref={buttonRef}
@@ -255,7 +255,8 @@ export default function Home() {
               <div className="sm:col-span-2 lg:col-span-1">
                 <h3 className="text-2xl sm:text-3xl font-serif mb-4">reknur</h3>
                 <p className="text-sm sm:text-base text-muted-foreground leading-relaxed max-w-md">
-                  Curating exceptional items for those who appreciate quality and craftsmanship.
+                  Curating exceptional limited-edition plushies for collectors who appreciate craftsmanship and unique
+                  designs.
                 </p>
               </div>
               <div>

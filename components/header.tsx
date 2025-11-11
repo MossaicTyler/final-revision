@@ -35,6 +35,13 @@ export function Header({ user, cartItemCount, cartItems }: HeaderProps) {
           </Link>
 
           <nav className="flex items-center gap-2 sm:gap-4">
+            <Link
+              href="/track-order"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors hidden sm:inline-flex"
+            >
+              Track Order
+            </Link>
+
             <CartDrawer initialItems={cartItems} cartItemCount={cartItemCount} />
 
             {user ? (

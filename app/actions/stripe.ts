@@ -6,6 +6,7 @@ import { sql } from "@/lib/db"
 import { getCurrentUser } from "@/lib/auth"
 import { sendOrderConfirmationEmail } from "@/lib/email"
 import { encryptCustomerData, logSecurityEvent, checkRateLimit, generateOrderReference } from "@/lib/security"
+import { isProductInStock, getProductStock } from "@/lib/inventory"
 
 export async function startCheckoutSession(productId: string) {
   const user = await getCurrentUser()
@@ -97,9 +98,12 @@ export async function startCheckoutSession(productId: string) {
   return session.client_secret
 }
 
-export async function startCartCheckoutSession(items: Array<{ productId: string; quantity: number }>) {
+export async function startCartCheckoutSession(
+  items: Array<{ productId: string; quantity: number }>,
+  guestInfo?: { email: string; name: string },
+) {
   const user = await getCurrentUser()
-  const identifier = user?.id || "guest"
+  const identifier = user?.id || guestInfo?.email || "guest"
 
   // Rate limiting
   const rateCheck = await checkRateLimit(identifier, "checkout", 10, 5)
@@ -109,6 +113,15 @@ export async function startCartCheckoutSession(items: Array<{ productId: string;
       metadata: { itemCount: items.length },
     })
     throw new Error("Too many checkout attempts. Please try again later.")
+  }
+
+  for (const item of items) {
+    const inStock = await isProductInStock(item.productId, item.quantity)
+    if (!inStock) {
+      const product = PRODUCTS.find((p) => p.id === item.productId)
+      const remainingStock = await getProductStock(item.productId)
+      throw new Error(`${product?.name || "Product"} is out of stock. Only ${remainingStock} remaining in stock.`)
+    }
   }
 
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
@@ -141,11 +154,14 @@ export async function startCartCheckoutSession(items: Array<{ productId: string;
     }
   })
 
+  const customerEmail = user?.email || guestInfo?.email
+  const customerName = user?.name || guestInfo?.name
+
   const session = await stripe.checkout.sessions.create({
     ui_mode: "embedded",
     line_items: lineItems,
     mode: "payment",
-    customer_email: user?.email,
+    customer_email: customerEmail,
     billing_address_collection: "required",
     shipping_address_collection: {
       allowed_countries: [
@@ -178,6 +194,8 @@ export async function startCartCheckoutSession(items: Array<{ productId: string;
       user_id: user?.id || "",
       items: JSON.stringify(items),
       checkout_type: "cart",
+      guest_email: guestInfo?.email || "",
+      guest_name: guestInfo?.name || "",
     },
   })
 
@@ -231,6 +249,7 @@ export async function createOrderFromSession(sessionId: string) {
 
     if (existingOrder.length > 0) {
       console.log("[v0] Order already exists (created by webhook):", existingOrder[0].id)
+      await clearCartAfterPurchase(session)
       return { success: true, orderId: existingOrder[0].id }
     }
 
@@ -362,6 +381,7 @@ export async function createOrderFromSession(sessionId: string) {
 
     const customerEmail = user?.email || guestEmail
     const customerName = customerData.name
+    const isGuest = !userId
 
     if (customerEmail) {
       console.log("[v0] Attempting to send confirmation email to:", customerEmail)
@@ -381,6 +401,7 @@ export async function createOrderFromSession(sessionId: string) {
           postalCode: customerData.address.postal_code,
           country: customerData.address.country,
         },
+        isGuest,
       })
         .then((result) => {
           console.log("[v0] Email send completed:", result)
@@ -392,11 +413,7 @@ export async function createOrderFromSession(sessionId: string) {
       console.log("[v0] No customer email available, skipping email")
     }
 
-    // Clear cart if cart checkout
-    if (checkoutType === "cart" && userId) {
-      await sql`DELETE FROM cart_items WHERE user_id = ${userId}`
-      console.log("[v0] Cart cleared for user:", userId)
-    }
+    await clearCartAfterPurchase(session)
 
     // Log security event
     await logSecurityEvent("order_created", "purchase", "success", {
@@ -420,5 +437,24 @@ export async function createOrderFromSession(sessionId: string) {
     })
 
     return { error: `Failed to create order: ${error instanceof Error ? error.message : "Unknown error"}` }
+  }
+}
+
+async function clearCartAfterPurchase(session: any) {
+  try {
+    const checkoutType = session.metadata?.checkout_type || "cart"
+    if (checkoutType !== "cart") {
+      return // Only clear cart for cart checkouts, not buy now
+    }
+
+    const userId = session.metadata?.user_id
+    if (userId) {
+      await sql`DELETE FROM cart_items WHERE user_id = ${userId}`
+      console.log("[v0] Cart cleared for user:", userId)
+    }
+    // Note: For guests, cart is stored in localStorage and cleared by the client
+  } catch (error) {
+    console.error("[v0] Error clearing cart:", error)
+    // Don't throw - cart clearing is non-critical
   }
 }

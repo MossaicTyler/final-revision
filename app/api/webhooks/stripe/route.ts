@@ -93,6 +93,7 @@ async function createOrderFromWebhook(session: any) {
     // Extract user and guest info
     const userId = session.metadata?.user_id || null
     const guestEmail = !userId ? session.customer_email : null
+    const isGuest = !userId
 
     // Prepare customer data for encryption
     const customerData = {
@@ -220,6 +221,7 @@ async function createOrderFromWebhook(session: any) {
           postalCode: customerData.address.postal_code,
           country: customerData.address.country,
         },
+        isGuest,
       })
 
       console.log("[v0] Email send result:", emailResult)

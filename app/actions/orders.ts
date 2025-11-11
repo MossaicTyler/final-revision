@@ -201,3 +201,65 @@ export async function updateOrderStatus(orderId: number, newStatus: string, note
     return { error: "Failed to update order status" }
   }
 }
+
+export async function getGuestOrder(orderId: number, email: string) {
+  try {
+    const result = await sql`
+      SELECT 
+        o.*,
+        json_agg(
+          json_build_object(
+            'id', oi.id,
+            'product_id', oi.product_id,
+            'product_name', oi.product_name,
+            'product_image', oi.product_image,
+            'quantity', oi.quantity,
+            'price', oi.price,
+            'variant', oi.variant
+          )
+        ) as items
+      FROM orders o
+      LEFT JOIN order_items oi ON o.id = oi.order_id
+      WHERE o.id = ${orderId} AND LOWER(o.customer_email) = LOWER(${email})
+      GROUP BY o.id
+    `
+
+    if (result.length === 0) {
+      return null
+    }
+
+    return result[0]
+  } catch (error) {
+    console.error("[v0] Get guest order error:", error)
+    return null
+  }
+}
+
+export async function getGuestOrderTracking(orderId: number, email: string) {
+  try {
+    const order = await sql`
+      SELECT tracking_number, carrier, estimated_delivery, status, shipped_at, delivered_at
+      FROM orders
+      WHERE id = ${orderId} AND LOWER(customer_email) = LOWER(${email})
+    `
+
+    if (order.length === 0) {
+      return null
+    }
+
+    const events = await sql`
+      SELECT status, location, description, event_time
+      FROM order_tracking_events
+      WHERE order_id = ${orderId}
+      ORDER BY event_time DESC
+    `
+
+    return {
+      ...order[0],
+      events,
+    }
+  } catch (error) {
+    console.error("[v0] Get guest order tracking error:", error)
+    return null
+  }
+}

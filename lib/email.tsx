@@ -100,21 +100,22 @@ export async function sendOrderConfirmationEmail(
       postalCode: string
       country: string
     }
+    isGuest?: boolean
   },
 ) {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
-    const orderUrl = `${baseUrl}/account/orders/${orderId}`
+    const orderUrl = orderDetails.isGuest
+      ? `${baseUrl}/track-order?orderId=${orderId}&email=${encodeURIComponent(email)}`
+      : `${baseUrl}/account/orders/${orderId}`
     const fromEmail = process.env.RESEND_FROM_EMAIL || "orders@notifiers.reknur.com"
 
-    // Format currency
     const formatPrice = (amount: number, currency: string) => {
       const formatted = (amount / 100).toFixed(2)
       const symbol = currency.toUpperCase() === "GBP" ? "£" : currency.toUpperCase() === "USD" ? "$" : "€"
       return `${symbol}${formatted}`
     }
 
-    // Generate items HTML
     const itemsHtml = orderDetails.items
       .map(
         (item) => `
@@ -130,6 +131,32 @@ export async function sendOrderConfirmationEmail(
     `,
       )
       .join("")
+
+    const guestTrackingHtml = orderDetails.isGuest
+      ? `
+      <tr>
+        <td style="padding: 0 40px 30px 40px; background-color: #f8f9fa; border-radius: 6px;">
+          <h2 style="margin: 0 0 12px 0; font-size: 18px; font-weight: 600; color: #1a1a1a;">Track Your Order</h2>
+          <p style="margin: 0 0 16px 0; font-size: 14px; line-height: 20px; color: #666666;">
+            As a guest, you can track your order anytime using your order number and email address at:
+          </p>
+          <p style="margin: 0 0 16px 0; font-size: 14px; line-height: 20px;">
+            <a href="${baseUrl}/track-order" style="color: #0066cc; text-decoration: none; font-weight: 500;">${baseUrl}/track-order</a>
+          </p>
+          <div style="background-color: #ffffff; border: 1px solid #dddddd; border-radius: 4px; padding: 16px; margin-bottom: 16px;">
+            <p style="margin: 0; font-size: 14px; line-height: 20px; color: #666666;">
+              <strong>Order Number:</strong> ${orderId}<br>
+              <strong>Email:</strong> ${email}
+            </p>
+          </div>
+          <p style="margin: 0; font-size: 13px; line-height: 18px; color: #999999;">
+            💡 Tip: Create an account to save your order history and enjoy faster checkout!
+          </p>
+        </td>
+      </tr>
+      <tr><td style="height: 20px;"></td></tr>
+    `
+      : ""
 
     const { data, error } = await resend.emails.send({
       from: fromEmail,
@@ -168,6 +195,8 @@ export async function sendOrderConfirmationEmail(
                       </td>
                     </tr>
 
+                    ${guestTrackingHtml}
+
                     <!-- Order Items -->
                     <tr>
                       <td style="padding: 0 40px 30px 40px;">
@@ -204,7 +233,7 @@ export async function sendOrderConfirmationEmail(
                     <tr>
                       <td style="padding: 0 40px 30px 40px; text-align: center;">
                         <a href="${orderUrl}" style="display: inline-block; padding: 14px 32px; background-color: #000000; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 16px; font-weight: 500;">
-                          View Order Details
+                          ${orderDetails.isGuest ? "Track Your Order" : "View Order Details"}
                         </a>
                       </td>
                     </tr>
@@ -266,7 +295,6 @@ export async function sendOrderStatusUpdateEmail(
     const orderUrl = `${baseUrl}/account/orders/${orderId}`
     const fromEmail = process.env.RESEND_FROM_EMAIL || "orders@notifiers.reknur.com"
 
-    // Status-specific messaging
     const statusMessages: Record<string, { title: string; message: string; color: string }> = {
       processing: {
         title: "Order is Being Processed",
@@ -296,7 +324,6 @@ export async function sendOrderStatusUpdateEmail(
       color: "#666666",
     }
 
-    // Tracking information HTML (only for shipped status)
     const trackingHtml =
       orderDetails.newStatus === "shipped" && orderDetails.trackingNumber
         ? `
