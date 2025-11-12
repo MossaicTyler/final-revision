@@ -21,13 +21,19 @@ export default async function GuestOrderTrackingPage({
     redirect("/track-order")
   }
 
-  const order = await getGuestOrder(Number.parseInt(id), email)
+  const orderId = Number.parseInt(id)
+
+  if (Number.isNaN(orderId) || orderId <= 0) {
+    notFound()
+  }
+
+  const order = await getGuestOrder(orderId, email)
 
   if (!order) {
     notFound()
   }
 
-  const tracking = await getGuestOrderTracking(Number.parseInt(id), email)
+  const tracking = await getGuestOrderTracking(orderId, email)
 
   const formattedTotal = new Intl.NumberFormat("en-GB", {
     style: "currency",
@@ -175,7 +181,15 @@ export default async function GuestOrderTrackingPage({
                 <CardTitle className="text-lg">Tracking Information</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {tracking?.tracking_number ? (
+                {order.status === "pending" || order.status === "processing" ? (
+                  <div className="text-center py-6 space-y-2">
+                    <Package className="h-12 w-12 mx-auto text-muted-foreground" />
+                    <p className="text-sm font-medium">Order {order.status === "pending" ? "Pending" : "Processing"}</p>
+                    <p className="text-sm text-muted-foreground">
+                      Your order is being prepared. Tracking information will be available once it ships.
+                    </p>
+                  </div>
+                ) : tracking?.tracking_number ? (
                   <>
                     <div className="space-y-2">
                       <p className="text-sm text-muted-foreground">Tracking Number</p>
@@ -202,9 +216,9 @@ export default async function GuestOrderTrackingPage({
                   </>
                 ) : (
                   <div className="text-center py-6 space-y-2">
-                    <Package className="h-12 w-12 mx-auto text-muted-foreground" />
+                    <Truck className="h-12 w-12 mx-auto text-muted-foreground" />
                     <p className="text-sm text-muted-foreground">
-                      Tracking information will be available once your order ships
+                      Tracking information will be updated once your order ships
                     </p>
                   </div>
                 )}

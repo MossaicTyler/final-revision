@@ -3,7 +3,7 @@
 import { stripe } from "@/lib/stripe"
 import { PRODUCTS } from "@/lib/products"
 import { sql } from "@/lib/db"
-import { getCurrentUser } from "@/lib/auth"
+import { getCurrentUser, ensureGuestSession } from "@/lib/auth"
 import { sendOrderConfirmationEmail } from "@/lib/email"
 import { encryptCustomerData, logSecurityEvent, generateOrderReference, checkRateLimit } from "@/lib/security"
 import { isProductInStock, getProductStock } from "@/lib/inventory"
@@ -127,6 +127,7 @@ export async function startCartCheckoutSession(
   guestInfo?: { email: string; name: string },
 ) {
   const user = await getCurrentUser()
+  const guestSessionId = !user ? await ensureGuestSession() : null
   const identifier = user?.id || guestInfo?.email || "guest"
 
   // Rate limiting
@@ -257,6 +258,7 @@ export async function startCartCheckoutSession(
     return_url: `${returnUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
     metadata: {
       user_id: user?.id || "",
+      session_id: guestSessionId || "",
       items: JSON.stringify(items),
       checkout_type: "cart",
       guest_email: guestInfo?.email || "",
@@ -514,30 +516,18 @@ async function clearCartAfterPurchase(session: any) {
     }
 
     const userId = session.metadata?.user_id
+    const guestSessionId = session.metadata?.session_id
 
     if (userId) {
+      // Clear cart for logged-in user
       await sql`DELETE FROM cart_items WHERE user_id = ${userId}`
       console.log("[v0] Cart cleared for user:", userId)
-      return
-    }
-
-    const guestEmail = session.metadata?.guest_email || session.customer_email
-    if (guestEmail) {
-      // Find any cart items associated with this email
-      const guestCarts = await sql`
-        SELECT DISTINCT session_id 
-        FROM cart_items 
-        WHERE session_id IS NOT NULL
-        LIMIT 100
-      `
-
-      // Clear all guest session carts (they should create new ones)
-      // This is a simple approach - in production you'd want session tracking
-      console.log("[v0] Guest cart clearing - found sessions:", guestCarts.length)
-
-      // For now, we'll rely on the client-side clearing since we don't have a reliable
-      // way to link session_id to the specific guest without additional tracking
-      console.log("[v0] Guest cart will be cleared by client after redirect")
+    } else if (guestSessionId) {
+      // Clear cart for guest using session_id
+      await sql`DELETE FROM cart_items WHERE session_id = ${guestSessionId}`
+      console.log("[v0] Cart cleared for guest session:", guestSessionId)
+    } else {
+      console.log("[v0] No user_id or session_id found, cart not cleared")
     }
   } catch (error) {
     console.error("[v0] Error clearing cart:", error)

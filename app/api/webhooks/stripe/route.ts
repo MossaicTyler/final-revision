@@ -227,10 +227,19 @@ async function createOrderFromWebhook(session: any) {
       console.log("[v0] Email send result:", emailResult)
     }
 
-    // Clear cart if cart checkout
-    if (checkoutType === "cart" && userId) {
-      await sql`DELETE FROM cart_items WHERE user_id = ${userId}`
-      console.log("[v0] Cart cleared for user:", userId)
+    if (checkoutType === "cart") {
+      if (userId) {
+        // Clear cart for logged-in user
+        await sql`DELETE FROM cart_items WHERE user_id = ${userId}`
+        console.log("[v0] Cart cleared for user:", userId)
+      } else {
+        // Clear cart for guest using session_id from metadata
+        const sessionId = session.metadata?.session_id
+        if (sessionId) {
+          await sql`DELETE FROM cart_items WHERE session_id = ${sessionId}`
+          console.log("[v0] Cart cleared for guest session:", sessionId)
+        }
+      }
     }
 
     // Log security event

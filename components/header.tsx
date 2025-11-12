@@ -38,7 +38,7 @@ export function Header({ user, cartItemCount, cartItems }: HeaderProps) {
             {!user && (
               <Link
                 href="/track-order"
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors hidden sm:inline-flex"
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
                 Track Order
               </Link>

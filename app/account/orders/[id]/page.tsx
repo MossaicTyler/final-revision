@@ -132,26 +132,6 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
               </div>
             </CardContent>
           </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Shipping Address</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-1">
-                <p className="font-medium">{order.shipping_name}</p>
-                <p className="text-sm text-muted-foreground">{order.shipping_address_line1}</p>
-                {order.shipping_address_line2 && (
-                  <p className="text-sm text-muted-foreground">{order.shipping_address_line2}</p>
-                )}
-                <p className="text-sm text-muted-foreground">
-                  {order.shipping_city}, {order.shipping_state} {order.shipping_postal_code}
-                </p>
-                <p className="text-sm text-muted-foreground">{order.shipping_country}</p>
-                {order.shipping_phone && <p className="text-sm text-muted-foreground">{order.shipping_phone}</p>}
-              </div>
-            </CardContent>
-          </Card>
         </div>
 
         {/* Tracking Information */}
