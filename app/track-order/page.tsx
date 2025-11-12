@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Package, Search, ArrowRight } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { AuthDialog } from "@/components/auth-dialog" // Import AuthDialog component
 
 export default function TrackOrderPage() {
   const router = useRouter()
@@ -16,6 +17,7 @@ export default function TrackOrderPage() {
   const [email, setEmail] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+  const [authDialogOpen, setAuthDialogOpen] = useState(false) // New state for AuthDialog
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -107,12 +109,14 @@ export default function TrackOrderPage() {
         <div className="text-center">
           <p className="text-sm text-muted-foreground">
             Have an account?{" "}
-            <a href="/account/orders" className="text-primary hover:underline font-medium">
+            <button onClick={() => setAuthDialogOpen(true)} className="text-primary hover:underline font-medium">
               Sign in to view all orders
-            </a>
+            </button>
           </p>
         </div>
       </div>
+      <AuthDialog open={authDialogOpen} onOpenChange={setAuthDialogOpen} defaultMode="signin" />{" "}
+      {/* AuthDialog component */}
     </div>
   )
 }

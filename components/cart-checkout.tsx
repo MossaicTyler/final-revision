@@ -8,12 +8,13 @@ import Image from "next/image"
 import { LoadingSpinner } from "./loading-spinner"
 import { formatPrice } from "@/lib/currency"
 import { Badge } from "@/components/ui/badge"
-import { Tag, User, Mail } from "lucide-react"
+import { Tag, User, Mail, AlertCircle } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { AuthDialog } from "./auth-dialog"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
 
@@ -95,8 +96,17 @@ export function CartCheckout({ items, subtotal, user }: CartCheckoutProps) {
       setCheckoutStarted(true)
       return clientSecret
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to start checkout")
+      const errorMessage = err instanceof Error ? err.message : "Failed to start checkout"
+      setError(errorMessage)
       setIsLoading(false)
+      setCheckoutStarted(false)
+
+      if (errorMessage.includes("out of stock")) {
+        setTimeout(() => {
+          window.location.reload()
+        }, 3000)
+      }
+
       return null
     }
   }, [items, user, guestEmail, guestName])
@@ -186,9 +196,15 @@ export function CartCheckout({ items, subtotal, user }: CartCheckoutProps) {
               </div>
 
               {error && (
-                <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-md text-sm text-destructive">
-                  {error}
-                </div>
+                <Alert variant={error.includes("out of stock") ? "destructive" : "default"}>
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription className="whitespace-pre-line">
+                    {error}
+                    {error.includes("out of stock") && (
+                      <span className="block mt-2 text-sm">Refreshing cart in 3 seconds...</span>
+                    )}
+                  </AlertDescription>
+                </Alert>
               )}
 
               <div className="space-y-4">
@@ -263,6 +279,18 @@ export function CartCheckout({ items, subtotal, user }: CartCheckoutProps) {
 
           {(user || checkoutStarted) && (
             <>
+              {error && !isLoading && (
+                <Alert variant="destructive" className="mb-4">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription className="whitespace-pre-line">
+                    {error}
+                    {error.includes("out of stock") && (
+                      <span className="block mt-2 text-sm">Refreshing cart in 3 seconds...</span>
+                    )}
+                  </AlertDescription>
+                </Alert>
+              )}
+
               {isLoading && (
                 <div className="py-16">
                   <LoadingSpinner size="large" />

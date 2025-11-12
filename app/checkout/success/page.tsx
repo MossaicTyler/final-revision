@@ -1,4 +1,5 @@
 import { getCheckoutSession, createOrderFromSession } from "@/app/actions/stripe"
+import { clearCart } from "@/app/actions/cart"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
@@ -24,6 +25,11 @@ export default async function CheckoutSuccessPage({
   }
 
   const result = await createOrderFromSession(sessionId)
+
+  if (result.success) {
+    await clearCart()
+    console.log("[v0] Cart cleared after successful checkout")
+  }
 
   if (result.error) {
     return (

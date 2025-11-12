@@ -1,8 +1,7 @@
 "use client"
 
 import type React from "react"
-
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -26,6 +25,12 @@ export function AuthDialog({ open, onOpenChange, defaultMode = "signin" }: AuthD
   const [requiresVerification, setRequiresVerification] = useState(false)
   const [userEmail, setUserEmail] = useState<string>("")
   const router = useRouter()
+
+  useEffect(() => {
+    if (open) {
+      setMode(defaultMode)
+    }
+  }, [open, defaultMode])
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -202,3 +207,5 @@ export function AuthDialog({ open, onOpenChange, defaultMode = "signin" }: AuthD
     </Dialog>
   )
 }
+
+export default AuthDialog

@@ -5,7 +5,7 @@ import { PRODUCTS } from "@/lib/products"
 import { sql } from "@/lib/db"
 import { getCurrentUser } from "@/lib/auth"
 import { sendOrderConfirmationEmail } from "@/lib/email"
-import { encryptCustomerData, logSecurityEvent, checkRateLimit, generateOrderReference } from "@/lib/security"
+import { encryptCustomerData, logSecurityEvent, generateOrderReference, checkRateLimit } from "@/lib/security"
 import { isProductInStock, getProductStock } from "@/lib/inventory"
 
 export async function startCheckoutSession(productId: string) {
@@ -37,6 +37,8 @@ export async function startCheckoutSession(productId: string) {
       : `${returnUrl}${productImage}`
     : undefined
 
+  const shippingCost = product.priceInCents < 1500 ? 500 : 0 // £5 if under £15, free otherwise
+
   const session = await stripe.checkout.sessions.create({
     ui_mode: "embedded",
     line_items: [
@@ -51,6 +53,28 @@ export async function startCheckoutSession(productId: string) {
           unit_amount: product.priceInCents,
         },
         quantity: 1,
+      },
+    ],
+    shipping_options: [
+      {
+        shipping_rate_data: {
+          type: "fixed_amount",
+          fixed_amount: {
+            amount: shippingCost,
+            currency: "gbp",
+          },
+          display_name: shippingCost === 0 ? "Free Standard Shipping" : "Standard Shipping",
+          delivery_estimate: {
+            minimum: {
+              unit: "business_day",
+              value: 7,
+            },
+            maximum: {
+              unit: "business_day",
+              value: 14,
+            },
+          },
+        },
       },
     ],
     mode: "payment",
@@ -115,17 +139,26 @@ export async function startCartCheckoutSession(
     throw new Error("Too many checkout attempts. Please try again later.")
   }
 
+  const outOfStockItems = []
   for (const item of items) {
     const inStock = await isProductInStock(item.productId, item.quantity)
     if (!inStock) {
       const product = PRODUCTS.find((p) => p.id === item.productId)
       const remainingStock = await getProductStock(item.productId)
-      throw new Error(`${product?.name || "Product"} is out of stock. Only ${remainingStock} remaining in stock.`)
+      outOfStockItems.push({
+        name: product?.name || "Product",
+        requested: item.quantity,
+        available: remainingStock,
+      })
     }
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
-  const returnUrl = baseUrl.startsWith("http") ? baseUrl : `https://${baseUrl}`
+  if (outOfStockItems.length > 0) {
+    const errorMessages = outOfStockItems.map(
+      (item) => `${item.name}: requested ${item.requested}, only ${item.available} available`,
+    )
+    throw new Error(`Some items are out of stock:\n${errorMessages.join("\n")}`)
+  }
 
   const lineItems = items.map((item) => {
     const product = PRODUCTS.find((p) => p.id === item.productId)
@@ -154,12 +187,44 @@ export async function startCartCheckoutSession(
     }
   })
 
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
+  const returnUrl = baseUrl.startsWith("http") ? baseUrl : `https://${baseUrl}`
+
+  const subtotal = items.reduce((sum, item) => {
+    const product = PRODUCTS.find((p) => p.id === item.productId)
+    return sum + (product ? product.priceInCents * item.quantity : 0)
+  }, 0)
+
+  const shippingCost = subtotal < 1500 ? 500 : 0 // £5 if under £15, free otherwise
+
   const customerEmail = user?.email || guestInfo?.email
   const customerName = user?.name || guestInfo?.name
 
   const session = await stripe.checkout.sessions.create({
     ui_mode: "embedded",
     line_items: lineItems,
+    shipping_options: [
+      {
+        shipping_rate_data: {
+          type: "fixed_amount",
+          fixed_amount: {
+            amount: shippingCost,
+            currency: "gbp",
+          },
+          display_name: shippingCost === 0 ? "Free Standard Shipping" : "Standard Shipping",
+          delivery_estimate: {
+            minimum: {
+              unit: "business_day",
+              value: 7,
+            },
+            maximum: {
+              unit: "business_day",
+              value: 14,
+            },
+          },
+        },
+      },
+    ],
     mode: "payment",
     customer_email: customerEmail,
     billing_address_collection: "required",
@@ -444,15 +509,36 @@ async function clearCartAfterPurchase(session: any) {
   try {
     const checkoutType = session.metadata?.checkout_type || "cart"
     if (checkoutType !== "cart") {
-      return // Only clear cart for cart checkouts, not buy now
+      console.log("[v0] Not a cart checkout, skipping cart clearing")
+      return
     }
 
     const userId = session.metadata?.user_id
+
     if (userId) {
       await sql`DELETE FROM cart_items WHERE user_id = ${userId}`
       console.log("[v0] Cart cleared for user:", userId)
+      return
     }
-    // Note: For guests, cart is stored in localStorage and cleared by the client
+
+    const guestEmail = session.metadata?.guest_email || session.customer_email
+    if (guestEmail) {
+      // Find any cart items associated with this email
+      const guestCarts = await sql`
+        SELECT DISTINCT session_id 
+        FROM cart_items 
+        WHERE session_id IS NOT NULL
+        LIMIT 100
+      `
+
+      // Clear all guest session carts (they should create new ones)
+      // This is a simple approach - in production you'd want session tracking
+      console.log("[v0] Guest cart clearing - found sessions:", guestCarts.length)
+
+      // For now, we'll rely on the client-side clearing since we don't have a reliable
+      // way to link session_id to the specific guest without additional tracking
+      console.log("[v0] Guest cart will be cleared by client after redirect")
+    }
   } catch (error) {
     console.error("[v0] Error clearing cart:", error)
     // Don't throw - cart clearing is non-critical

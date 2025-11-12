@@ -126,19 +126,30 @@ export async function getCart() {
 
     const validItems = []
     const invalidItemIds = []
+    const outOfStockItemIds = []
 
     for (const item of items) {
-      if (validProductIds.has(item.product_id)) {
-        validItems.push(item)
-      } else {
+      if (!validProductIds.has(item.product_id)) {
         invalidItemIds.push(item.id)
+        continue
       }
+
+      const hasStock = await isProductInStock(item.product_id, item.quantity)
+      if (!hasStock) {
+        outOfStockItemIds.push(item.id)
+        continue
+      }
+
+      validItems.push(item)
     }
 
-    // Remove invalid items from cart
-    if (invalidItemIds.length > 0) {
-      await sql`DELETE FROM cart_items WHERE id = ANY(${invalidItemIds})`
-      console.log("[v0] Removed invalid products from cart:", invalidItemIds)
+    const itemsToRemove = [...invalidItemIds, ...outOfStockItemIds]
+    if (itemsToRemove.length > 0) {
+      await sql`DELETE FROM cart_items WHERE id = ANY(${itemsToRemove})`
+      console.log("[v0] Removed invalid/out-of-stock products from cart:", {
+        invalid: invalidItemIds.length,
+        outOfStock: outOfStockItemIds.length,
+      })
     }
 
     console.log("[v0] Retrieved cart items:", { count: validItems.length })
@@ -176,11 +187,12 @@ export async function clearCart() {
 
     if (userId) {
       await sql`DELETE FROM cart_items WHERE user_id = ${userId}`
-    } else {
+      console.log("[v0] Cleared cart for user:", userId)
+    } else if (sessionId) {
       await sql`DELETE FROM cart_items WHERE session_id = ${sessionId}`
+      console.log("[v0] Cleared cart for guest session:", sessionId)
     }
 
-    console.log("[v0] Cleared cart")
     return { success: true }
   } catch (error) {
     console.error("[v0] Clear cart error:", error)

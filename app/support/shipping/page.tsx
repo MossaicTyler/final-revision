@@ -15,19 +15,9 @@ export default function ShippingPage() {
 
             <div className="bg-muted/30 p-6 rounded-lg space-y-4 not-prose">
               <div>
-                <h3 className="font-semibold text-foreground mb-2">Standard Shipping (5-7 business days)</h3>
-                <p className="text-sm">Free on orders over £150</p>
-                <p className="text-sm">£12 on orders under £150</p>
-              </div>
-
-              <div>
-                <h3 className="font-semibold text-foreground mb-2">Express Shipping (2-3 business days)</h3>
-                <p className="text-sm">£25 flat rate</p>
-              </div>
-
-              <div>
-                <h3 className="font-semibold text-foreground mb-2">Overnight Shipping (1 business day)</h3>
-                <p className="text-sm">£45 flat rate</p>
+                <h3 className="font-semibold text-foreground mb-2">Standard Shipping (Up to 2 weeks)</h3>
+                <p className="text-sm">Free on orders over £15</p>
+                <p className="text-sm">£5 on orders under £15</p>
               </div>
             </div>
 
