@@ -139,6 +139,9 @@ export async function startCartCheckoutSession(
     throw new Error("Too many checkout attempts. Please try again later.")
   }
 
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
+  const returnUrl = baseUrl.startsWith("http") ? baseUrl : `https://${baseUrl}`
+
   const outOfStockItems = []
   for (const item of items) {
     const inStock = await isProductInStock(item.productId, item.quantity)
@@ -186,9 +189,6 @@ export async function startCartCheckoutSession(
       quantity: item.quantity,
     }
   })
-
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
-  const returnUrl = baseUrl.startsWith("http") ? baseUrl : `https://${baseUrl}`
 
   const subtotal = items.reduce((sum, item) => {
     const product = PRODUCTS.find((p) => p.id === item.productId)

@@ -30,6 +30,14 @@ export default async function CheckoutPage() {
   const shippingCost = subtotal < 1500 ? 500 : 0
   const total = subtotal + shippingCost
 
+  const serializedUser = user
+    ? {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+      }
+    : null
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-16">
@@ -40,7 +48,7 @@ export default async function CheckoutPage() {
             subtotal={subtotal}
             shippingCost={shippingCost}
             total={total}
-            user={user}
+            user={serializedUser}
           />
         </div>
       </div>
