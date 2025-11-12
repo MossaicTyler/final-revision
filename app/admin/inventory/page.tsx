@@ -3,6 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { InventoryTable } from "@/components/admin/inventory-table"
 import { Package, TrendingDown, TrendingUp, AlertTriangle } from "lucide-react"
 
+export const dynamic = "force-dynamic"
+
 export default async function AdminInventoryPage() {
   const { inventory, error } = await getInventoryOverview()
 
