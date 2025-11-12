@@ -106,11 +106,13 @@ export function ProductCard({ product, onCartOpen }: ProductCardProps) {
     }
   }, [isHovering, hasMultipleImages, productImages.length])
 
-  const nextImage = () => {
+  const nextImage = (e: React.MouseEvent) => {
+    e.stopPropagation()
     setCurrentImageIndex((prev) => (prev + 1) % productImages.length)
   }
 
-  const prevImage = () => {
+  const prevImage = (e: React.MouseEvent) => {
+    e.stopPropagation()
     setCurrentImageIndex((prev) => (prev - 1 + productImages.length) % productImages.length)
   }
 
@@ -144,16 +146,34 @@ export function ProductCard({ product, onCartOpen }: ProductCardProps) {
               )
             )}
             {hasMultipleImages && (
-              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
-                {productImages.map((_, index) => (
-                  <div
-                    key={index}
-                    className={`h-1.5 w-1.5 rounded-full transition-all ${
-                      index === currentImageIndex ? "bg-white w-4" : "bg-white/50"
-                    }`}
-                  />
-                ))}
-              </div>
+              <>
+                <Button
+                  variant="secondary"
+                  size="icon"
+                  className="absolute left-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full opacity-0 group-hover:opacity-80 hover:opacity-100 transition-opacity"
+                  onClick={prevImage}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="icon"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full opacity-0 group-hover:opacity-80 hover:opacity-100 transition-opacity"
+                  onClick={nextImage}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
+                  {productImages.map((_, index) => (
+                    <div
+                      key={index}
+                      className={`h-1.5 w-1.5 rounded-full transition-all ${
+                        index === currentImageIndex ? "bg-white w-4" : "bg-white/50"
+                      }`}
+                    />
+                  ))}
+                </div>
+              </>
             )}
           </div>
           <div className="p-4 sm:p-6 space-y-3 sm:space-y-4 flex-1 flex flex-col">
@@ -261,7 +281,7 @@ export function ProductCard({ product, onCartOpen }: ProductCardProps) {
                     className="absolute left-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full opacity-80 hover:opacity-100"
                     onClick={(e) => {
                       e.stopPropagation()
-                      prevImage()
+                      prevImage(e)
                     }}
                   >
                     <ChevronLeft className="h-4 w-4" />
@@ -272,7 +292,7 @@ export function ProductCard({ product, onCartOpen }: ProductCardProps) {
                     className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full opacity-80 hover:opacity-100"
                     onClick={(e) => {
                       e.stopPropagation()
-                      nextImage()
+                      nextImage(e)
                     }}
                   >
                     <ChevronRight className="h-4 w-4" />

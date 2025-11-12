@@ -1,35 +1,36 @@
 "use client"
 
-import { useCallback, useState } from "react"
-import { EmbeddedCheckout, EmbeddedCheckoutProvider } from "@stripe/react-stripe-js"
-import { loadStripe } from "@stripe/stripe-js"
-import { startCheckoutSession } from "@/app/actions/stripe"
-import { LoadingSpinner } from "./loading-spinner"
-
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
+import { useRouter } from "next/navigation"
+import { Button } from "@/components/ui/button"
+import { ShoppingCart } from "lucide-react"
 
 export default function Checkout({ productId }: { productId: string }) {
-  const [isLoading, setIsLoading] = useState(true)
+  const router = useRouter()
 
-  const startCheckoutSessionForProduct = useCallback(async () => {
-    const clientSecret = await startCheckoutSession(productId)
-    setIsLoading(false)
-    return clientSecret
-  }, [productId])
+  const handleCheckout = async () => {
+    // Add product to cart and redirect to cart page for guest checkout
+    const { addToCart } = await import("@/app/actions/cart")
+    const result = await addToCart(productId, 1)
+
+    if (result.error) {
+      alert(result.error)
+    } else {
+      router.push("/cart")
+    }
+  }
 
   return (
-    <div id="checkout">
-      {isLoading && (
-        <div className="py-16">
-          <LoadingSpinner size="large" />
-          <p className="text-center text-muted-foreground text-sm mt-4 tracking-wider uppercase">
-            Loading secure checkout...
-          </p>
+    <div className="py-8 space-y-6">
+      <div className="text-center space-y-4">
+        <ShoppingCart className="h-16 w-16 mx-auto text-primary" />
+        <div>
+          <h3 className="text-xl font-semibold mb-2">Ready to Purchase?</h3>
+          <p className="text-muted-foreground">Click below to add this item to your cart and proceed to checkout.</p>
         </div>
-      )}
-      <EmbeddedCheckoutProvider stripe={stripePromise} options={{ fetchClientSecret: startCheckoutSessionForProduct }}>
-        <EmbeddedCheckout />
-      </EmbeddedCheckoutProvider>
+        <Button onClick={handleCheckout} size="lg" className="w-full">
+          Add to Cart & Checkout
+        </Button>
+      </div>
     </div>
   )
 }

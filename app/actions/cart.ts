@@ -121,8 +121,28 @@ export async function getCart() {
       ? await sql`SELECT * FROM cart_items WHERE user_id = ${userId} ORDER BY created_at DESC`
       : await sql`SELECT * FROM cart_items WHERE session_id = ${sessionId} ORDER BY created_at DESC`
 
-    console.log("[v0] Retrieved cart items:", { count: items.length })
-    return items
+    const { PRODUCTS } = await import("@/lib/products")
+    const validProductIds = new Set(PRODUCTS.map((p) => p.id))
+
+    const validItems = []
+    const invalidItemIds = []
+
+    for (const item of items) {
+      if (validProductIds.has(item.product_id)) {
+        validItems.push(item)
+      } else {
+        invalidItemIds.push(item.id)
+      }
+    }
+
+    // Remove invalid items from cart
+    if (invalidItemIds.length > 0) {
+      await sql`DELETE FROM cart_items WHERE id = ANY(${invalidItemIds})`
+      console.log("[v0] Removed invalid products from cart:", invalidItemIds)
+    }
+
+    console.log("[v0] Retrieved cart items:", { count: validItems.length })
+    return validItems
   } catch (error) {
     console.error("[v0] Get cart error:", error)
     return []
