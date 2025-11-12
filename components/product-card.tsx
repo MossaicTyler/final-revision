@@ -26,6 +26,8 @@ export function ProductCard({ product, onCartOpen }: ProductCardProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [isHovering, setIsHovering] = useState(false)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
+  const [isPaused, setIsPaused] = useState(false)
+  const pauseTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const [stock, setStock] = useState<number | null>(null)
 
   useEffect(() => {
@@ -85,7 +87,7 @@ export function ProductCard({ product, onCartOpen }: ProductCardProps) {
   const hasMultipleImages = productImages.length > 1
 
   useEffect(() => {
-    if (isHovering && hasMultipleImages) {
+    if (isHovering && hasMultipleImages && !isPaused) {
       intervalRef.current = setInterval(() => {
         setCurrentImageIndex((prev) => (prev + 1) % productImages.length)
       }, 1200)
@@ -96,6 +98,7 @@ export function ProductCard({ product, onCartOpen }: ProductCardProps) {
       }
       if (!isHovering) {
         setCurrentImageIndex(0)
+        setIsPaused(false) // Reset pause when not hovering
       }
     }
 
@@ -104,16 +107,40 @@ export function ProductCard({ product, onCartOpen }: ProductCardProps) {
         clearInterval(intervalRef.current)
       }
     }
-  }, [isHovering, hasMultipleImages, productImages.length])
+  }, [isHovering, hasMultipleImages, productImages.length, isPaused])
+
+  useEffect(() => {
+    return () => {
+      if (pauseTimeoutRef.current) {
+        clearTimeout(pauseTimeoutRef.current)
+      }
+    }
+  }, [])
 
   const nextImage = (e: React.MouseEvent) => {
     e.stopPropagation()
     setCurrentImageIndex((prev) => (prev + 1) % productImages.length)
+    handleManualNavigation()
   }
 
   const prevImage = (e: React.MouseEvent) => {
     e.stopPropagation()
     setCurrentImageIndex((prev) => (prev - 1 + productImages.length) % productImages.length)
+    handleManualNavigation()
+  }
+
+  const handleManualNavigation = () => {
+    setIsPaused(true)
+
+    // Clear any existing pause timeout
+    if (pauseTimeoutRef.current) {
+      clearTimeout(pauseTimeoutRef.current)
+    }
+
+    // Resume after 10 seconds
+    pauseTimeoutRef.current = setTimeout(() => {
+      setIsPaused(false)
+    }, 10000)
   }
 
   return (

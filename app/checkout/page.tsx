@@ -27,12 +27,21 @@ export default async function CheckoutPage() {
     return sum + (item.product?.priceInCents || 0) * item.quantity
   }, 0)
 
+  const shippingCost = subtotal < 1500 ? 500 : 0
+  const total = subtotal + shippingCost
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-4xl font-serif mb-8">Checkout</h1>
-          <CartCheckout items={enrichedItems} subtotal={subtotal} user={user} />
+          <CartCheckout
+            items={enrichedItems}
+            subtotal={subtotal}
+            shippingCost={shippingCost}
+            total={total}
+            user={user}
+          />
         </div>
       </div>
     </div>

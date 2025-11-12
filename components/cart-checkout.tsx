@@ -50,10 +50,12 @@ interface CartCheckoutProps {
     }
   }>
   subtotal: number
+  shippingCost: number
+  total: number
   user: { id: string; email: string; name: string | null } | null
 }
 
-export function CartCheckout({ items, subtotal, user }: CartCheckoutProps) {
+export function CartCheckout({ items, subtotal, shippingCost, total, user }: CartCheckoutProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [guestEmail, setGuestEmail] = useState("")
   const [guestName, setGuestName] = useState("")
@@ -121,6 +123,8 @@ export function CartCheckout({ items, subtotal, user }: CartCheckoutProps) {
   }
 
   const formattedSubtotal = formatPrice(subtotal, "GBP")
+  const formattedShipping = formatPrice(shippingCost, "GBP")
+  const formattedTotal = formatPrice(total, "GBP")
 
   return (
     <div className="grid lg:grid-cols-3 gap-8">
@@ -174,13 +178,23 @@ export function CartCheckout({ items, subtotal, user }: CartCheckoutProps) {
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Shipping</span>
-              <span>Calculated at checkout</span>
+              <span className={shippingCost === 0 ? "text-green-600 dark:text-green-400" : ""}>
+                {shippingCost === 0 ? "FREE" : formattedShipping}
+              </span>
             </div>
+            {shippingCost === 0 && subtotal >= 1500 && (
+              <p className="text-xs text-green-600 dark:text-green-400">🎉 You qualified for free shipping!</p>
+            )}
+            {shippingCost > 0 && (
+              <p className="text-xs text-muted-foreground">
+                Add {formatPrice(1500 - subtotal, "GBP")} more for free shipping
+              </p>
+            )}
           </div>
 
           <div className="flex justify-between text-lg font-semibold">
             <span>Total</span>
-            <span>{formattedSubtotal}</span>
+            <span>{formattedTotal}</span>
           </div>
         </div>
       </div>

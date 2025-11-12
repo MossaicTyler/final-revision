@@ -11,6 +11,7 @@ import {
 } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { sendVerificationEmail } from "@/lib/email"
+import { cookies } from "next/headers"
 
 export async function signUp(formData: FormData) {
   const name = formData.get("name") as string
@@ -124,6 +125,8 @@ export async function signIn(formData: FormData) {
         requiresVerification: true,
       }
     }
+
+    await mergeGuestCartToUser(user.id)
 
     // Create session
     const token = await createSession({
@@ -292,6 +295,8 @@ export async function verifyEmail(token: string) {
     `
 
     console.log("[v0] Email verified successfully. Creating session...")
+
+    await mergeGuestCartToUser(user.id)
 
     // Create session
     const sessionToken = await createSession({
@@ -482,5 +487,74 @@ export async function resetPassword(token: string, newPassword: string) {
   } catch (error) {
     console.error("[v0] Password reset error:", error)
     return { error: "Failed to reset password" }
+  }
+}
+
+// Helper function to merge guest cart into user cart
+async function mergeGuestCartToUser(userId: string) {
+  try {
+    const cookieStore = await cookies()
+    const sessionId = cookieStore.get("session_id")?.value
+
+    if (!sessionId) {
+      console.log("[v0] No guest session to merge")
+      return
+    }
+
+    // Get guest cart items
+    const guestCartItems = await sql`
+      SELECT product_id, quantity FROM cart_items 
+      WHERE session_id = ${sessionId}
+    `
+
+    if (guestCartItems.length === 0) {
+      console.log("[v0] No guest cart items to merge")
+      return
+    }
+
+    console.log("[v0] Merging guest cart:", { sessionId, itemCount: guestCartItems.length })
+
+    // For each guest cart item, merge with user cart
+    for (const guestItem of guestCartItems) {
+      // Check if user already has this product
+      const existingUserItem = await sql`
+        SELECT id, quantity FROM cart_items 
+        WHERE user_id = ${userId} AND product_id = ${guestItem.product_id}
+      `
+
+      if (existingUserItem.length > 0) {
+        // Update quantity
+        const newQuantity = existingUserItem[0].quantity + guestItem.quantity
+        await sql`
+          UPDATE cart_items 
+          SET quantity = ${newQuantity}, updated_at = NOW()
+          WHERE id = ${existingUserItem[0].id}
+        `
+        console.log("[v0] Merged cart item quantities:", {
+          productId: guestItem.product_id,
+          newQuantity,
+        })
+      } else {
+        // Move guest item to user cart
+        await sql`
+          UPDATE cart_items 
+          SET user_id = ${userId}, session_id = NULL, updated_at = NOW()
+          WHERE session_id = ${sessionId} AND product_id = ${guestItem.product_id}
+        `
+        console.log("[v0] Moved guest cart item to user:", {
+          productId: guestItem.product_id,
+        })
+      }
+    }
+
+    // Delete any remaining guest cart items
+    await sql`
+      DELETE FROM cart_items WHERE session_id = ${sessionId}
+    `
+
+    console.log("[v0] Guest cart merge completed successfully")
+  } catch (error) {
+    console.error("[v0] Error merging guest cart:", error)
+    // Don't throw - cart merging shouldn't block auth
   }
 }
