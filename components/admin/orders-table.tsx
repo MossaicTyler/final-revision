@@ -118,7 +118,7 @@ export function AdminOrdersTable({ orders }: { orders: any[] }) {
                       <span className="text-sm tabular-nums">{order.item_count}</span>
                     </td>
                     <td className="px-4 py-3">
-                      <span className="text-sm font-medium tabular-nums">${(order.total_amount / 100).toFixed(2)}</span>
+                      <span className="text-sm font-medium tabular-nums">£{(order.total_amount / 100).toFixed(2)}</span>
                     </td>
                     <td className="px-4 py-3">
                       {order.tracking_number ? (
