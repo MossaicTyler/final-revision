@@ -28,21 +28,23 @@ export default async function GuestOrderTrackingPage({
 
   const orderId = Number.parseInt(id)
 
-  if (Number.isNaN(orderId) || orderId <= 0) {
-    console.log("[v0] Invalid order ID:", id)
+  if (Number.isNaN(orderId) || orderId <= 0 || orderId < 10000000 || orderId > 99999999) {
+    console.log("[v0] Invalid order ID format:", id)
     notFound()
   }
 
-  const order = await getGuestOrder(orderId, email)
+  const normalizedEmail = email.toLowerCase().trim()
 
-  console.log("[v0] Guest order found:", order ? `Order #${order.id}` : "null")
+  const order = await getGuestOrder(orderId, normalizedEmail)
+
+  console.log("[v0] Guest order lookup:", { orderId, email: normalizedEmail, found: !!order })
 
   if (!order) {
-    console.log("[v0] Order not found or email mismatch")
+    console.log("[v0] Order not found - ID:", orderId, "Email:", normalizedEmail)
     notFound()
   }
 
-  const tracking = await getGuestOrderTracking(orderId, email)
+  const tracking = await getGuestOrderTracking(orderId, normalizedEmail)
 
   const formattedTotal = new Intl.NumberFormat("en-GB", {
     style: "currency",

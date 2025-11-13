@@ -17,7 +17,6 @@ export default function Home() {
   const titleRef = useRef<HTMLHeadingElement>(null)
   const subtitleRef = useRef<HTMLParagraphElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
-  const [animationComplete, setAnimationComplete] = useState(false)
 
   const filteredProducts = selectedCategory
     ? selectedCategory === "Sale"
@@ -52,21 +51,6 @@ export default function Home() {
   }, [selectedCategory])
 
   useEffect(() => {
-    let scrollTimeout: NodeJS.Timeout
-
-    const preventScroll = (e: Event) => {
-      if (!animationComplete) {
-        e.preventDefault()
-      }
-    }
-
-    // Disable scroll during animation
-    if (!animationComplete) {
-      document.body.style.overflow = "hidden"
-      window.addEventListener("wheel", preventScroll, { passive: false })
-      window.addEventListener("touchmove", preventScroll, { passive: false })
-    }
-
     const animateHeroText = () => {
       // Title appears first
       setTimeout(() => {
@@ -91,24 +75,10 @@ export default function Home() {
           buttonRef.current.style.transform = "translateY(0)"
         }
       }, 1500)
-
-      scrollTimeout = setTimeout(() => {
-        setAnimationComplete(true)
-        document.body.style.overflow = ""
-        window.removeEventListener("wheel", preventScroll)
-        window.removeEventListener("touchmove", preventScroll)
-      }, 2100)
     }
 
     animateHeroText()
-
-    return () => {
-      clearTimeout(scrollTimeout)
-      document.body.style.overflow = ""
-      window.removeEventListener("wheel", preventScroll)
-      window.removeEventListener("touchmove", preventScroll)
-    }
-  }, [animationComplete])
+  }, [])
 
   const scrollToProducts = () => {
     const productsSection = document.getElementById("products-section")

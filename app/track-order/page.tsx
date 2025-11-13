@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Package, Search, ArrowRight } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { AuthDialog } from "@/components/auth-dialog" // Import AuthDialog component
+import { AuthDialog } from "@/components/auth-dialog"
 
 export default function TrackOrderPage() {
   const router = useRouter()
@@ -17,7 +17,7 @@ export default function TrackOrderPage() {
   const [email, setEmail] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
-  const [authDialogOpen, setAuthDialogOpen] = useState(false) // New state for AuthDialog
+  const [authDialogOpen, setAuthDialogOpen] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -30,9 +30,23 @@ export default function TrackOrderPage() {
       return
     }
 
+    const orderIdNum = Number.parseInt(orderId)
+    if (Number.isNaN(orderIdNum) || orderIdNum <= 0) {
+      setError("Please enter a valid order ID (numbers only)")
+      setLoading(false)
+      return
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      setError("Please enter a valid email address")
+      setLoading(false)
+      return
+    }
+
     try {
       // Navigate to the order tracking detail page
-      router.push(`/track-order/${orderId}?email=${encodeURIComponent(email)}`)
+      router.push(`/track-order/${orderIdNum}?email=${encodeURIComponent(email.toLowerCase().trim())}`)
     } catch (err) {
       setError("An error occurred. Please try again.")
       setLoading(false)
@@ -61,13 +75,13 @@ export default function TrackOrderPage() {
                 <Label htmlFor="orderId">Order ID</Label>
                 <Input
                   id="orderId"
-                  type="number"
-                  placeholder="e.g., 12345"
+                  type="text"
+                  placeholder="e.g., 12345678"
                   value={orderId}
-                  onChange={(e) => setOrderId(e.target.value)}
+                  onChange={(e) => setOrderId(e.target.value.trim())}
                   required
                 />
-                <p className="text-xs text-muted-foreground">Found in your order confirmation email</p>
+                <p className="text-xs text-muted-foreground">8-digit order number from your confirmation email</p>
               </div>
 
               <div className="space-y-2">
@@ -77,7 +91,7 @@ export default function TrackOrderPage() {
                   type="email"
                   placeholder="your@email.com"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => setEmail(e.target.value.trim())}
                   required
                 />
                 <p className="text-xs text-muted-foreground">The email you used at checkout</p>
@@ -115,8 +129,7 @@ export default function TrackOrderPage() {
           </p>
         </div>
       </div>
-      <AuthDialog open={authDialogOpen} onOpenChange={setAuthDialogOpen} defaultMode="signin" />{" "}
-      {/* AuthDialog component */}
+      <AuthDialog open={authDialogOpen} onOpenChange={setAuthDialogOpen} defaultMode="signin" />
     </div>
   )
 }
