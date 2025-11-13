@@ -7,6 +7,8 @@ import Image from "next/image"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 
+export const dynamic = "force-dynamic"
+
 export default async function GuestOrderTrackingPage({
   params,
   searchParams,
@@ -17,19 +19,26 @@ export default async function GuestOrderTrackingPage({
   const { id } = await params
   const { email } = await searchParams
 
+  console.log("[v0] Guest tracking - Order ID:", id, "Email:", email)
+
   if (!email) {
+    console.log("[v0] No email provided, redirecting to track-order")
     redirect("/track-order")
   }
 
   const orderId = Number.parseInt(id)
 
   if (Number.isNaN(orderId) || orderId <= 0) {
+    console.log("[v0] Invalid order ID:", id)
     notFound()
   }
 
   const order = await getGuestOrder(orderId, email)
 
+  console.log("[v0] Guest order found:", order ? `Order #${order.id}` : "null")
+
   if (!order) {
+    console.log("[v0] Order not found or email mismatch")
     notFound()
   }
 
