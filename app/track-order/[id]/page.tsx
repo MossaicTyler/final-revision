@@ -1,8 +1,11 @@
 import { getGuestOrder, getGuestOrderTracking } from "@/app/actions/orders"
-import { notFound, redirect } from "next/navigation"
+import { getCurrentUser } from "@/lib/auth"
+import { sql } from "@/lib/db"
+import { decryptData } from "@/lib/auth"
+import { notFound, redirect } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { ArrowLeft, Package, Truck, CheckCircle, MapPin, Clock, ShoppingBag } from "lucide-react"
+import { ArrowLeft, Package, Truck, CheckCircle, MapPin, Clock, ShoppingBag } from 'lucide-react'
 import Image from "next/image"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -19,11 +22,11 @@ export default async function GuestOrderTrackingPage({
   const { id } = await params
   const { email } = await searchParams
 
-  console.log("[v0] Guest tracking - Order ID:", id, "Email:", email)
+  console.log("[v0] Order tracking - Order ID:", id, "Email:", email)
 
-  if (!email) {
-    console.log("[v0] No email provided, redirecting to track-order")
-    redirect("/track-order")
+  if (!id) {
+    console.log("[v0] No order ID provided")
+    notFound()
   }
 
   const orderId = Number.parseInt(id)
@@ -33,18 +36,98 @@ export default async function GuestOrderTrackingPage({
     notFound()
   }
 
-  const normalizedEmail = email.toLowerCase().trim()
+  const user = await getCurrentUser()
+  let order = null
+  let tracking = null
 
-  const order = await getGuestOrder(orderId, normalizedEmail)
+  if (user && email) {
+    // Authenticated user tracking their order with email verification
+    const normalizedEmail = email.toLowerCase().trim()
+    console.log("[v0] Authenticated user tracking - Order ID:", orderId, "Email:", normalizedEmail, "User ID:", user.id)
 
-  console.log("[v0] Guest order lookup:", { orderId, email: normalizedEmail, found: !!order })
+    try {
+      const userOrder = await sql`
+        SELECT 
+          o.*,
+          json_agg(
+            json_build_object(
+              'id', oi.id,
+              'product_id', oi.product_id,
+              'product_name', oi.product_name,
+              'product_image', oi.product_image,
+              'quantity', oi.quantity,
+              'price', oi.price,
+              'variant', oi.variant
+            )
+          ) as items
+        FROM orders o
+        LEFT JOIN order_items oi ON o.id = oi.order_id
+        WHERE o.id = ${orderId} AND o.user_id = ${user.id}
+        GROUP BY o.id
+      `
 
-  if (!order) {
-    console.log("[v0] Order not found - ID:", orderId, "Email:", normalizedEmail)
-    notFound()
+      if (userOrder.length > 0) {
+        // Verify email matches
+        const fetchedOrder = userOrder[0]
+        let emailMatches = false
+
+        if (fetchedOrder.customer_email_encrypted) {
+          try {
+            const decryptedEmail = await decryptData(fetchedOrder.customer_email_encrypted)
+            if (decryptedEmail.toLowerCase().trim() === normalizedEmail) {
+              emailMatches = true
+              console.log("[v0] Authenticated user email verified")
+            }
+          } catch (error) {
+            console.error("[v0] Error decrypting customer email:", error)
+          }
+        }
+
+        if (emailMatches) {
+          order = fetchedOrder
+
+          // Get tracking info
+          const trackingData = await sql`
+            SELECT tracking_number, carrier, estimated_delivery, status, shipped_at, delivered_at
+            FROM orders
+            WHERE id = ${orderId} AND user_id = ${user.id}
+          `
+
+          if (trackingData.length > 0) {
+            const events = await sql`
+              SELECT status, location, description, event_time
+              FROM order_tracking_events
+              WHERE order_id = ${orderId}
+              ORDER BY event_time DESC
+            `
+            tracking = { ...trackingData[0], events }
+          }
+        }
+      }
+    } catch (error) {
+      console.error("[v0] Error fetching authenticated user order:", error)
+    }
+  } else if (!user && email) {
+    // Guest order tracking (existing logic)
+    const normalizedEmail = email.toLowerCase().trim()
+    console.log("[v0] Guest tracking - Order ID:", orderId, "Email:", normalizedEmail)
+
+    order = await getGuestOrder(orderId, normalizedEmail)
+    tracking = await getGuestOrderTracking(orderId, normalizedEmail)
+  } else if (user) {
+    // Authenticated user without email - redirect to orders page
+    console.log("[v0] Authenticated user without email, redirecting to orders")
+    redirect("/account/orders")
+  } else {
+    // No email provided for guest - redirect to track-order form
+    console.log("[v0] No email provided, redirecting to track-order")
+    redirect("/track-order")
   }
 
-  const tracking = await getGuestOrderTracking(orderId, normalizedEmail)
+  if (!order) {
+    console.log("[v0] Order not found - ID:", orderId, "Email:", email)
+    notFound()
+  }
 
   const formattedTotal = new Intl.NumberFormat("en-GB", {
     style: "currency",
@@ -274,8 +357,8 @@ export default async function GuestOrderTrackingPage({
                 <div className="text-center space-y-3">
                   <ShoppingBag className="h-10 w-10 mx-auto text-primary" />
                   <div>
-                    <h4 className="font-semibold mb-1">Create an Account</h4>
-                    <p className="text-sm text-muted-foreground mb-4">Save your orders and track them easily</p>
+                    <h4 className="font-semibold mb-1">Continue Shopping</h4>
+                    <p className="text-sm text-muted-foreground mb-4">Browse more of our products</p>
                   </div>
                   <Button asChild className="w-full">
                     <Link href="/">Continue Shopping</Link>
