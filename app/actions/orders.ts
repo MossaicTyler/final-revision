@@ -2,8 +2,9 @@
 
 import { sql } from "@/lib/db"
 import { getCurrentUser } from "@/lib/auth"
-import { redirect } from "next/navigation"
+import { redirect } from 'next/navigation'
 import { sendOrderStatusUpdateEmail } from "@/lib/email"
+import { decryptData } from "@/lib/auth"
 
 export async function getUserOrders() {
   const user = await getCurrentUser()
@@ -136,7 +137,7 @@ export async function updateOrderStatus(orderId: number, newStatus: string, note
 
   try {
     const currentOrder = await sql`
-      SELECT o.status, o.customer_email, o.customer_name, o.tracking_number, o.carrier, o.estimated_delivery
+      SELECT o.status, o.customer_email_encrypted, o.shipping_name_encrypted, o.tracking_number, o.carrier, o.estimated_delivery
       FROM orders o
       WHERE o.id = ${orderId}
     `
@@ -146,8 +147,12 @@ export async function updateOrderStatus(orderId: number, newStatus: string, note
     }
 
     const oldStatus = currentOrder[0].status
-    const customerEmail = currentOrder[0].customer_email
-    const customerName = currentOrder[0].customer_name
+    const customerEmail = currentOrder[0].customer_email_encrypted
+      ? await decryptData(currentOrder[0].customer_email_encrypted)
+      : null
+    const customerName = currentOrder[0].shipping_name_encrypted
+      ? await decryptData(currentOrder[0].shipping_name_encrypted)
+      : null
     const trackingNumber = currentOrder[0].tracking_number
     const carrier = currentOrder[0].carrier
     const estimatedDelivery = currentOrder[0].estimated_delivery
@@ -204,7 +209,7 @@ export async function updateOrderStatus(orderId: number, newStatus: string, note
 
 export async function getGuestOrder(orderId: number, email: string) {
   try {
-    const result = await sql`
+    const orders = await sql`
       SELECT 
         o.*,
         json_agg(
@@ -220,15 +225,28 @@ export async function getGuestOrder(orderId: number, email: string) {
         ) as items
       FROM orders o
       LEFT JOIN order_items oi ON o.id = oi.order_id
-      WHERE o.id = ${orderId} AND LOWER(o.customer_email) = LOWER(${email})
+      WHERE o.id = ${orderId}
       GROUP BY o.id
     `
 
-    if (result.length === 0) {
+    if (orders.length === 0) {
       return null
     }
 
-    return result[0]
+    const order = orders[0]
+
+    if (order.customer_email_encrypted) {
+      const decryptedEmail = await decryptData(order.customer_email_encrypted)
+      if (decryptedEmail.toLowerCase() === email.toLowerCase()) {
+        return order
+      }
+    }
+
+    if (order.guest_email && order.guest_email.toLowerCase() === email.toLowerCase()) {
+      return order
+    }
+
+    return null
   } catch (error) {
     console.error("[v0] Get guest order error:", error)
     return null
@@ -238,12 +256,31 @@ export async function getGuestOrder(orderId: number, email: string) {
 export async function getGuestOrderTracking(orderId: number, email: string) {
   try {
     const order = await sql`
-      SELECT tracking_number, carrier, estimated_delivery, status, shipped_at, delivered_at
+      SELECT tracking_number, carrier, estimated_delivery, status, shipped_at, delivered_at, customer_email_encrypted, guest_email
       FROM orders
-      WHERE id = ${orderId} AND LOWER(customer_email) = LOWER(${email})
+      WHERE id = ${orderId}
     `
 
     if (order.length === 0) {
+      return null
+    }
+
+    const orderData = order[0]
+
+    let emailMatches = false
+    
+    if (orderData.customer_email_encrypted) {
+      const decryptedEmail = await decryptData(orderData.customer_email_encrypted)
+      if (decryptedEmail.toLowerCase() === email.toLowerCase()) {
+        emailMatches = true
+      }
+    }
+
+    if (!emailMatches && orderData.guest_email && orderData.guest_email.toLowerCase() === email.toLowerCase()) {
+      emailMatches = true
+    }
+
+    if (!emailMatches) {
       return null
     }
 
@@ -255,7 +292,12 @@ export async function getGuestOrderTracking(orderId: number, email: string) {
     `
 
     return {
-      ...order[0],
+      tracking_number: orderData.tracking_number,
+      carrier: orderData.carrier,
+      estimated_delivery: orderData.estimated_delivery,
+      status: orderData.status,
+      shipped_at: orderData.shipped_at,
+      delivered_at: orderData.delivered_at,
       events,
     }
   } catch (error) {
