@@ -219,8 +219,7 @@ export async function getGuestOrder(orderId: number, email: string) {
             'product_name', oi.product_name,
             'product_image', oi.product_image,
             'quantity', oi.quantity,
-            'price', oi.price,
-            'variant', oi.variant
+            'price', oi.price
           )
         ) as items
       FROM orders o
@@ -230,23 +229,42 @@ export async function getGuestOrder(orderId: number, email: string) {
     `
 
     if (orders.length === 0) {
+      console.log("[v0] Order not found:", orderId)
       return null
     }
 
     const order = orders[0]
+    const normalizedEmail = email.toLowerCase().trim()
 
+    let emailMatches = false
+
+    // Check encrypted customer email (for both guests and registered users)
     if (order.customer_email_encrypted) {
-      const decryptedEmail = await decryptData(order.customer_email_encrypted)
-      if (decryptedEmail.toLowerCase() === email.toLowerCase()) {
-        return order
+      try {
+        const decryptedEmail = await decryptData(order.customer_email_encrypted)
+        if (decryptedEmail.toLowerCase().trim() === normalizedEmail) {
+          emailMatches = true
+          console.log("[v0] Email matched via customer_email_encrypted")
+        }
+      } catch (decryptError) {
+        console.error("[v0] Error decrypting customer_email_encrypted:", decryptError)
       }
     }
 
-    if (order.guest_email && order.guest_email.toLowerCase() === email.toLowerCase()) {
-      return order
+    // Check plain guest email
+    if (!emailMatches && order.guest_email) {
+      if (order.guest_email.toLowerCase().trim() === normalizedEmail) {
+        emailMatches = true
+        console.log("[v0] Email matched via guest_email")
+      }
     }
 
-    return null
+    if (!emailMatches) {
+      console.log("[v0] Email mismatch for order:", orderId, "provided:", normalizedEmail)
+      return null
+    }
+
+    return order
   } catch (error) {
     console.error("[v0] Get guest order error:", error)
     return null
@@ -262,25 +280,38 @@ export async function getGuestOrderTracking(orderId: number, email: string) {
     `
 
     if (order.length === 0) {
+      console.log("[v0] Order not found for tracking:", orderId)
       return null
     }
 
     const orderData = order[0]
+    const normalizedEmail = email.toLowerCase().trim()
 
     let emailMatches = false
     
+    // Check encrypted customer email (for both guests and registered users)
     if (orderData.customer_email_encrypted) {
-      const decryptedEmail = await decryptData(orderData.customer_email_encrypted)
-      if (decryptedEmail.toLowerCase() === email.toLowerCase()) {
-        emailMatches = true
+      try {
+        const decryptedEmail = await decryptData(orderData.customer_email_encrypted)
+        if (decryptedEmail.toLowerCase().trim() === normalizedEmail) {
+          emailMatches = true
+          console.log("[v0] Tracking email matched via customer_email_encrypted")
+        }
+      } catch (decryptError) {
+        console.error("[v0] Error decrypting customer_email_encrypted for tracking:", decryptError)
       }
     }
 
-    if (!emailMatches && orderData.guest_email && orderData.guest_email.toLowerCase() === email.toLowerCase()) {
-      emailMatches = true
+    // Check plain guest email
+    if (!emailMatches && orderData.guest_email) {
+      if (orderData.guest_email.toLowerCase().trim() === normalizedEmail) {
+        emailMatches = true
+        console.log("[v0] Tracking email matched via guest_email")
+      }
     }
 
     if (!emailMatches) {
+      console.log("[v0] Email mismatch for tracking - order:", orderId, "provided:", normalizedEmail)
       return null
     }
 
