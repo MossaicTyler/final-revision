@@ -1,4 +1,4 @@
-import { getCurrentUser, getCurrentUserWithDetails } from "@/lib/auth"
+import { getCurrentUser } from "@/lib/auth"
 import { getUserAddresses } from "@/app/actions/account"
 import { ProfileSettings } from "@/components/profile-settings"
 import { AddressSettings } from "@/components/address-settings"
@@ -6,7 +6,6 @@ import { AccountDeletion } from "@/components/account-deletion"
 
 export default async function SettingsPage() {
   const user = await getCurrentUser()
-  const userDetails = await getCurrentUserWithDetails()
   const addresses = await getUserAddresses()
 
   if (!user) {
@@ -19,7 +18,7 @@ export default async function SettingsPage() {
 
       <ProfileSettings user={user} />
       <AddressSettings addresses={addresses} />
-      <AccountDeletion hasOAuthProvider={!!userDetails?.oauth_provider} />
+      <AccountDeletion />
     </div>
   )
 }

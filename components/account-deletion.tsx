@@ -17,11 +17,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { AlertTriangle, Trash2 } from "lucide-react"
+import { AlertTriangle, Trash2 } from 'lucide-react'
 import { deleteAccount } from "@/app/actions/account"
-import { useRouter } from "next/navigation"
+import { useRouter } from 'next/navigation'
 
-export function AccountDeletion({ hasOAuthProvider }: { hasOAuthProvider: boolean }) {
+export function AccountDeletion() {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -81,19 +81,17 @@ export function AccountDeletion({ hasOAuthProvider }: { hasOAuthProvider: boolea
               </AlertDescription>
             </Alert>
 
-            {!hasOAuthProvider && (
-              <div className="space-y-2">
-                <Label htmlFor="password">Confirm your password</Label>
-                <Input
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                  disabled={loading}
-                  placeholder="Enter your password"
-                />
-              </div>
-            )}
+            <div className="space-y-2">
+              <Label htmlFor="password">Confirm your password</Label>
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                required
+                disabled={loading}
+                placeholder="Enter your password"
+              />
+            </div>
 
             <div className="space-y-2">
               <Label htmlFor="confirmation">Type DELETE to confirm</Label>

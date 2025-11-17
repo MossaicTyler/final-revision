@@ -2,7 +2,7 @@
 
 import { sql } from "@/lib/db"
 import { getCurrentUser, hashPassword, verifyPassword, clearSessionCookie } from "@/lib/auth"
-import { redirect } from "next/navigation"
+import { redirect } from 'next/navigation'
 import { revalidatePath } from "next/cache"
 
 export async function updateProfile(formData: FormData) {
@@ -273,9 +273,8 @@ export async function deleteAccount(formData: FormData) {
   }
 
   try {
-    // Get user details
     const userResult = await sql`
-      SELECT password_hash, oauth_provider FROM users WHERE id = ${user.id}
+      SELECT password_hash FROM users WHERE id = ${user.id}
     `
 
     if (userResult.length === 0) {
@@ -284,12 +283,10 @@ export async function deleteAccount(formData: FormData) {
 
     const userData = userResult[0]
 
-    // Verify password for non-OAuth users
-    if (!userData.oauth_provider) {
-      const isValid = await verifyPassword(password, userData.password_hash)
-      if (!isValid) {
-        return { error: "Incorrect password" }
-      }
+    // Verify password
+    const isValid = await verifyPassword(password, userData.password_hash)
+    if (!isValid) {
+      return { error: "Incorrect password" }
     }
 
     // Anonymize orders instead of deleting (for record keeping)

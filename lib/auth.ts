@@ -117,7 +117,7 @@ export async function getCurrentUserWithDetails() {
   if (!user) return null
 
   const result = await sql`
-    SELECT id, email, name, email_verified, oauth_provider, created_at
+    SELECT id, email, name, email_verified, created_at
     FROM users
     WHERE id = ${user.id}
   `

@@ -9,7 +9,7 @@ import {
   clearSessionCookie,
   generateVerificationToken,
 } from "@/lib/auth"
-import { redirect } from "next/navigation"
+import { redirect } from 'next/navigation'
 import { sendVerificationEmail } from "@/lib/email"
 import { cookies } from "next/headers"
 
@@ -261,7 +261,6 @@ export async function verifyEmail(token: string) {
       tokenExpires: user.verification_token_expires,
     })
 
-    // Check if already verified
     if (user.email_verified) {
       console.log("[v0] User email already verified")
       return { error: "Email already verified. You can sign in now." }
@@ -282,7 +281,6 @@ export async function verifyEmail(token: string) {
       return { error: "Verification link has expired. Please request a new one." }
     }
 
-    // Mark email as verified
     console.log("[v0] Marking email as verified for user:", user.email)
 
     await sql`
@@ -298,7 +296,6 @@ export async function verifyEmail(token: string) {
 
     await mergeGuestCartToUser(user.id)
 
-    // Create session
     const sessionToken = await createSession({
       id: user.id,
       email: user.email,
@@ -308,12 +305,12 @@ export async function verifyEmail(token: string) {
 
     await setSessionCookie(sessionToken)
 
-    console.log("[v0] Session created successfully")
+    console.log("[v0] Session created successfully - user is now logged in")
 
     return { success: true }
   } catch (error) {
     console.error("[v0] Email verification error:", error)
-    return { error: "Failed to verify email" }
+    return { error: "Failed to verify email. Please try again or contact support." }
   }
 }
 
