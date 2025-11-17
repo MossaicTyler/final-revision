@@ -11,15 +11,19 @@ import type { Product } from "@/lib/products"
 import Checkout from "./checkout"
 import { addToCart } from "@/app/actions/cart"
 import { getProductStock } from "@/lib/inventory"
-import { ShoppingCart, Tag, ChevronLeft, ChevronRight } from "lucide-react"
+import { ShoppingCart, Tag, ChevronLeft, ChevronRight } from 'lucide-react'
 import { LoadingSpinner } from "./loading-spinner"
+import { useRegion } from "@/contexts/region-context"
 
 interface ProductCardProps {
   product: Product
   onCartOpen?: () => void
 }
 
-export function ProductCard({ product, onCartOpen }: ProductCardProps) {
+export function ProductCard({ product: originalProduct, onCartOpen }: ProductCardProps) {
+  const { region, getLocalizedProduct } = useRegion()
+  const product = getLocalizedProduct(originalProduct)
+
   const [showCheckout, setShowCheckout] = useState(false)
   const [showDetails, setShowDetails] = useState(false)
   const [isPending, startTransition] = useTransition()
@@ -32,21 +36,21 @@ export function ProductCard({ product, onCartOpen }: ProductCardProps) {
 
   useEffect(() => {
     async function fetchStock() {
-      const currentStock = await getProductStock(product.id)
+      const currentStock = await getProductStock(originalProduct.id)
       setStock(currentStock)
     }
     fetchStock()
-  }, [product.id])
+  }, [originalProduct.id])
 
-  const formattedPrice = new Intl.NumberFormat("en-GB", {
+  const formattedPrice = new Intl.NumberFormat(region.locale, {
     style: "currency",
-    currency: "GBP",
+    currency: region.currency,
   }).format(product.priceInCents / 100)
 
   const formattedOriginalPrice = product.originalPriceInCents
-    ? new Intl.NumberFormat("en-GB", {
+    ? new Intl.NumberFormat(region.locale, {
         style: "currency",
-        currency: "GBP",
+        currency: region.currency,
       }).format(product.originalPriceInCents / 100)
     : null
 
@@ -65,10 +69,10 @@ export function ProductCard({ product, onCartOpen }: ProductCardProps) {
 
     startTransition(async () => {
       try {
-        const result = await addToCart(product.id, 1)
+        const result = await addToCart(originalProduct.id, 1)
         if (result.error) {
           alert(result.error)
-          const currentStock = await getProductStock(product.id)
+          const currentStock = await getProductStock(originalProduct.id)
           setStock(currentStock)
         } else {
           window.dispatchEvent(new CustomEvent("openCart"))
@@ -98,7 +102,7 @@ export function ProductCard({ product, onCartOpen }: ProductCardProps) {
       }
       if (!isHovering) {
         setCurrentImageIndex(0)
-        setIsPaused(false) // Reset pause when not hovering
+        setIsPaused(false)
       }
     }
 
@@ -132,12 +136,10 @@ export function ProductCard({ product, onCartOpen }: ProductCardProps) {
   const handleManualNavigation = () => {
     setIsPaused(true)
 
-    // Clear any existing pause timeout
     if (pauseTimeoutRef.current) {
       clearTimeout(pauseTimeoutRef.current)
     }
 
-    // Resume after 10 seconds
     pauseTimeoutRef.current = setTimeout(() => {
       setIsPaused(false)
     }, 10000)
@@ -325,7 +327,6 @@ export function ProductCard({ product, onCartOpen }: ProductCardProps) {
                     <ChevronRight className="h-4 w-4" />
                   </Button>
 
-                  {/* Image indicator dots */}
                   <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
                     {productImages.map((_, index) => (
                       <button
@@ -432,7 +433,7 @@ export function ProductCard({ product, onCartOpen }: ProductCardProps) {
               {product.name} - {formattedPrice}
             </DialogDescription>
           </DialogHeader>
-          <Checkout productId={product.id} />
+          <Checkout productId={originalProduct.id} />
         </DialogContent>
       </Dialog>
     </>

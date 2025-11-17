@@ -6,15 +6,16 @@ import { loadStripe } from "@stripe/stripe-js"
 import { startCartCheckoutSession } from "@/app/actions/stripe"
 import Image from "next/image"
 import { LoadingSpinner } from "./loading-spinner"
-import { formatPrice } from "@/lib/currency"
 import { Badge } from "@/components/ui/badge"
-import { Tag, User, Mail, AlertCircle } from "lucide-react"
+import { Tag, User, Mail, AlertCircle } from 'lucide-react'
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { AuthDialog } from "./auth-dialog"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { useRegion } from "@/contexts/region-context"
+import { formatPrice as formatRegionalPrice } from "@/lib/regions"
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
 
@@ -49,13 +50,10 @@ interface CartCheckoutProps {
       originalPriceInCents?: number
     }
   }>
-  subtotal: number
-  shippingCost: number
-  total: number
   user: { id: string; email: string; name: string | null } | null
 }
 
-export function CartCheckout({ items, subtotal, shippingCost, total, user }: CartCheckoutProps) {
+export function CartCheckout({ items, user }: CartCheckoutProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [guestEmail, setGuestEmail] = useState("")
   const [guestName, setGuestName] = useState("")
@@ -63,6 +61,7 @@ export function CartCheckout({ items, subtotal, shippingCost, total, user }: Car
   const [error, setError] = useState("")
   const [authDialogOpen, setAuthDialogOpen] = useState(false)
   const [authDialogMode, setAuthDialogMode] = useState<"signin" | "signup">("signin")
+  const { region, getLocalizedProduct } = useRegion()
 
   useEffect(() => {
     const savedEmail = getCookie("guest_email")
@@ -79,6 +78,19 @@ export function CartCheckout({ items, subtotal, shippingCost, total, user }: Car
     if (guestName) setCookie("guest_name", guestName)
   }, [guestName])
 
+  const localizedItems = items.map((item) => {
+    if (!item.product) return item
+    const localizedProduct = getLocalizedProduct(item.product)
+    return { ...item, product: localizedProduct }
+  })
+
+  const subtotal = localizedItems.reduce((sum, item) => {
+    return sum + (item.product?.priceInCents || 0) * item.quantity
+  }, 0)
+
+  const shippingCost = subtotal < 1500 ? 500 : 0
+  const total = subtotal + shippingCost
+
   const startCheckout = useCallback(async () => {
     try {
       if (!user && (!guestEmail || !guestName)) {
@@ -92,6 +104,7 @@ export function CartCheckout({ items, subtotal, shippingCost, total, user }: Car
           productId: item.product_id,
           quantity: item.quantity,
         })),
+        region.code,
         !user ? { email: guestEmail, name: guestName } : undefined,
       )
       setIsLoading(false)
@@ -111,7 +124,7 @@ export function CartCheckout({ items, subtotal, shippingCost, total, user }: Car
 
       return null
     }
-  }, [items, user, guestEmail, guestName])
+  }, [items, user, guestEmail, guestName, region.code])
 
   const handleStartCheckout = () => {
     if (!user && (!guestEmail || !guestName)) {
@@ -122,9 +135,9 @@ export function CartCheckout({ items, subtotal, shippingCost, total, user }: Car
     setCheckoutStarted(true)
   }
 
-  const formattedSubtotal = formatPrice(subtotal, "GBP")
-  const formattedShipping = formatPrice(shippingCost, "GBP")
-  const formattedTotal = formatPrice(total, "GBP")
+  const formattedSubtotal = formatRegionalPrice(subtotal, region.code)
+  const formattedShipping = formatRegionalPrice(shippingCost, region.code)
+  const formattedTotal = formatRegionalPrice(total, region.code)
 
   return (
     <div className="grid lg:grid-cols-3 gap-8">
@@ -134,7 +147,7 @@ export function CartCheckout({ items, subtotal, shippingCost, total, user }: Car
           <h2 className="text-xl font-serif">Order Summary</h2>
 
           <div className="space-y-3">
-            {items.map((item) => (
+            {localizedItems.map((item) => (
               <div key={item.id} className="flex gap-3">
                 <div className="relative w-16 h-16 flex-shrink-0 rounded-md overflow-hidden bg-muted">
                   <Image
@@ -160,12 +173,12 @@ export function CartCheckout({ items, subtotal, shippingCost, total, user }: Car
                   <p className="text-xs text-muted-foreground">Qty: {item.quantity}</p>
                   {item.product?.onSale && item.product?.originalPriceInCents && (
                     <p className="text-xs text-muted-foreground line-through">
-                      {formatPrice(item.product.originalPriceInCents, "GBP")}
+                      {formatRegionalPrice(item.product.originalPriceInCents, region.code)}
                     </p>
                   )}
                 </div>
                 <p className="text-sm font-medium">
-                  {formatPrice((item.product?.priceInCents || 0) * item.quantity, "GBP")}
+                  {formatRegionalPrice((item.product?.priceInCents || 0) * item.quantity, region.code)}
                 </p>
               </div>
             ))}
@@ -187,7 +200,7 @@ export function CartCheckout({ items, subtotal, shippingCost, total, user }: Car
             )}
             {shippingCost > 0 && (
               <p className="text-xs text-muted-foreground">
-                Add {formatPrice(1500 - subtotal, "GBP")} more for free shipping
+                Add {formatRegionalPrice(1500 - subtotal, region.code)} more for free shipping
               </p>
             )}
           </div>

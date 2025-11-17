@@ -1,6 +1,6 @@
 import { getCart } from "@/app/actions/cart"
 import { PRODUCTS } from "@/lib/products"
-import { redirect } from "next/navigation"
+import { redirect } from 'next/navigation'
 import { CartCheckout } from "@/components/cart-checkout"
 import { getCurrentUser } from "@/lib/auth"
 
@@ -23,13 +23,6 @@ export default async function CheckoutPage() {
     }
   })
 
-  const subtotal = enrichedItems.reduce((sum, item) => {
-    return sum + (item.product?.priceInCents || 0) * item.quantity
-  }, 0)
-
-  const shippingCost = subtotal < 1500 ? 500 : 0
-  const total = subtotal + shippingCost
-
   const serializedUser = user
     ? {
         id: user.id,
@@ -43,13 +36,7 @@ export default async function CheckoutPage() {
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-4xl font-serif mb-8">Checkout</h1>
-          <CartCheckout
-            items={enrichedItems}
-            subtotal={subtotal}
-            shippingCost={shippingCost}
-            total={total}
-            user={serializedUser}
-          />
+          <CartCheckout items={enrichedItems} user={serializedUser} />
         </div>
       </div>
     </div>

@@ -1,8 +1,8 @@
 import { getOrderById, getOrderTracking } from "@/app/actions/orders"
-import { notFound } from "next/navigation"
+import { notFound } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { ArrowLeft, Package, Truck, CheckCircle, MapPin, Clock } from "lucide-react"
+import { ArrowLeft, Package, Truck, CheckCircle, MapPin, Clock } from 'lucide-react'
 import Image from "next/image"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -19,7 +19,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
 
   const formattedTotal = new Intl.NumberFormat("en-GB", {
     style: "currency",
-    currency: order.currency,
+    currency: order.currency.toUpperCase(),
   }).format(order.total_amount / 100)
 
   const formattedDate = new Date(order.created_at).toLocaleDateString("en-GB", {
@@ -100,7 +100,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                         <p className="text-sm font-medium">
                           {new Intl.NumberFormat("en-GB", {
                             style: "currency",
-                            currency: "GBP",
+                            currency: order.currency.toUpperCase(),
                           }).format(item.price / 100)}{" "}
                           each
                         </p>
@@ -108,7 +108,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                       <p className="font-semibold">
                         {new Intl.NumberFormat("en-GB", {
                           style: "currency",
-                          currency: "GBP",
+                          currency: order.currency.toUpperCase(),
                         }).format((item.price * item.quantity) / 100)}
                       </p>
                     </div>

@@ -6,12 +6,15 @@ import { PRODUCTS } from "@/lib/products"
 import { CartItem } from "@/components/cart-item"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { ShoppingBag } from "lucide-react"
+import { ShoppingBag } from 'lucide-react'
 import { LoadingSpinner } from "@/components/loading-spinner"
+import { useRegion } from "@/contexts/region-context"
+import { formatPrice as formatRegionalPrice, getRegionalPrice } from "@/lib/regions"
 
 export default function CartPage() {
   const [cartItems, setCartItems] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const { region, getLocalizedProduct } = useRegion()
 
   useEffect(() => {
     async function loadCart() {
@@ -33,25 +36,31 @@ export default function CartPage() {
     return () => window.removeEventListener("cartUpdated", handleCartUpdate)
   }, [])
 
-  // Enrich cart items with product data
   const enrichedItems = cartItems.map((item) => {
     const product = PRODUCTS.find((p) => p.id === item.product_id)
+    if (!product) return { ...item, product: undefined }
+    
+    const localizedProduct = getLocalizedProduct(product)
     return {
       ...item,
-      product,
+      product: localizedProduct,
     }
   })
 
   const subtotal = enrichedItems.reduce((sum, item) => {
-    const price =
-      item.product?.onSale && item.product?.priceInCents ? item.product.priceInCents : item.product?.priceInCents || 0
+    if (!item.product) return sum
+    const product = PRODUCTS.find((p) => p.id === item.product_id)
+    if (!product) return sum
+    
+    const regionalPrice = getRegionalPrice(product, region.code)
+    const price = product.onSale && product.salePrice 
+      ? getRegionalPrice({ ...product, priceInCents: product.salePrice }, region.code)
+      : regionalPrice
+    
     return sum + price * item.quantity
   }, 0)
 
-  const formattedSubtotal = new Intl.NumberFormat("en-GB", {
-    style: "currency",
-    currency: "GBP",
-  }).format(subtotal / 100)
+  const formattedSubtotal = formatRegionalPrice(subtotal, region.code)
 
   if (loading) {
     return (

@@ -1,6 +1,6 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Inter, JetBrains_Mono, Playfair_Display } from "next/font/google"
+import { Inter, JetBrains_Mono, Playfair_Display } from 'next/font/google'
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 import { Header } from "@/components/header"
@@ -11,6 +11,7 @@ import { LoadingSpinner } from "@/components/loading-spinner"
 import { Suspense } from "react"
 import { ThemeProvider } from "@/components/theme-provider"
 import { CookieConsent } from "@/components/cookie-consent"
+import { RegionProvider } from "@/contexts/region-context"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -96,7 +97,7 @@ export const metadata: Metadata = {
   verification: {
     google: "your-google-verification-code",
   },
-    generator: 'v0.app'
+  generator: 'v0.app'
 }
 
 function PageLoader() {
@@ -150,12 +151,14 @@ export default async function RootLayout({
       </head>
       <body className="font-sans">
         <ThemeProvider>
-          <Suspense fallback={<PageLoader />}>
-            <Header user={user} cartItemCount={cartItemCount} cartItems={enrichedCartItems} />
-          </Suspense>
-          {children}
-          <CookieConsent />
-          <Analytics />
+          <RegionProvider>
+            <Suspense fallback={<PageLoader />}>
+              <Header user={user} cartItemCount={cartItemCount} cartItems={enrichedCartItems} />
+            </Suspense>
+            {children}
+            <CookieConsent />
+            <Analytics />
+          </RegionProvider>
         </ThemeProvider>
       </body>
     </html>

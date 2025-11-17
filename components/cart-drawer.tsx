@@ -2,15 +2,17 @@
 
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
-import { ShoppingCart, X } from "lucide-react"
+import { ShoppingCart, X } from 'lucide-react'
 import { useState, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { removeFromCart, updateCartQuantity, getCart } from "@/app/actions/cart"
-import { Minus, Plus, Tag } from "lucide-react"
+import { Minus, Plus, Tag } from 'lucide-react'
 import { LoadingSpinner } from "./loading-spinner"
 import { PRODUCTS } from "@/lib/products"
 import { Badge } from "@/components/ui/badge"
+import { useRegion } from "@/contexts/region-context"
+import { formatPrice } from "@/lib/regions"
 
 interface CartItem {
   id: number
@@ -32,6 +34,7 @@ interface CartDrawerProps {
 }
 
 export function CartDrawer({ initialItems, cartItemCount }: CartDrawerProps) {
+  const { region, getLocalizedProduct } = useRegion()
   const [open, setOpen] = useState(false)
   const [items, setItems] = useState(initialItems)
   const [loadingItems, setLoadingItems] = useState<Set<number>>(new Set())
@@ -42,13 +45,47 @@ export function CartDrawer({ initialItems, cartItemCount }: CartDrawerProps) {
   }, [initialItems])
 
   useEffect(() => {
+    const handleRegionChange = async () => {
+      console.log("[v0] Region changed, refreshing cart items with new pricing")
+      const freshCart = await getCart()
+      const enrichedCart = freshCart.map((item) => {
+        const product = PRODUCTS.find((p) => p.id === item.product_id)
+        return {
+          ...item,
+          product: product ? getLocalizedProduct(product) : undefined,
+        }
+      })
+      setItems(enrichedCart)
+    }
+
+    window.addEventListener("regionChanged", handleRegionChange)
+    return () => window.removeEventListener("regionChanged", handleRegionChange)
+  }, [getLocalizedProduct, region])
+
+  useEffect(() => {
+    const refreshItems = async () => {
+      const freshCart = await getCart()
+      const enrichedCart = freshCart.map((item) => {
+        const product = PRODUCTS.find((p) => p.id === item.product_id)
+        return {
+          ...item,
+          product: product ? getLocalizedProduct(product) : undefined,
+        }
+      })
+      setItems(enrichedCart)
+    }
+    
+    refreshItems()
+  }, [region.code, getLocalizedProduct])
+
+  useEffect(() => {
     const handleCartUpdate = async () => {
       const freshCart = await getCart()
       const enrichedCart = freshCart.map((item) => {
         const product = PRODUCTS.find((p) => p.id === item.product_id)
         return {
           ...item,
-          product,
+          product: product ? getLocalizedProduct(product) : undefined,
         }
       })
       setItems(enrichedCart)
@@ -58,7 +95,7 @@ export function CartDrawer({ initialItems, cartItemCount }: CartDrawerProps) {
 
     window.addEventListener("cartUpdated", handleCartUpdate)
     return () => window.removeEventListener("cartUpdated", handleCartUpdate)
-  }, [])
+  }, [getLocalizedProduct])
 
   useEffect(() => {
     const handleOpenCart = async () => {
@@ -67,7 +104,7 @@ export function CartDrawer({ initialItems, cartItemCount }: CartDrawerProps) {
         const product = PRODUCTS.find((p) => p.id === item.product_id)
         return {
           ...item,
-          product,
+          product: product ? getLocalizedProduct(product) : undefined,
         }
       })
       setItems(enrichedCart)
@@ -78,16 +115,13 @@ export function CartDrawer({ initialItems, cartItemCount }: CartDrawerProps) {
 
     window.addEventListener("openCart", handleOpenCart)
     return () => window.removeEventListener("openCart", handleOpenCart)
-  }, [])
+  }, [getLocalizedProduct])
 
   const subtotal = items.reduce((sum, item) => {
     return sum + (item.product?.priceInCents || 0) * item.quantity
   }, 0)
 
-  const formattedSubtotal = new Intl.NumberFormat("en-GB", {
-    style: "currency",
-    currency: "GBP",
-  }).format(subtotal / 100)
+  const formattedSubtotal = formatPrice(subtotal, region.code)
 
   async function handleUpdateQuantity(itemId: number, newQuantity: number) {
     setLoadingItems((prev) => new Set(prev).add(itemId))
@@ -216,19 +250,12 @@ export function CartDrawer({ initialItems, cartItemCount }: CartDrawerProps) {
                                   % OFF
                                 </Badge>
                                 <span className="text-xs text-muted-foreground line-through">
-                                  {new Intl.NumberFormat("en-GB", {
-                                    style: "currency",
-                                    currency: "GBP",
-                                  }).format(item.product.originalPriceInCents / 100)}
+                                  {formatPrice(item.product.originalPriceInCents, region.code)}
                                 </span>
                               </div>
                             )}
                             <p className="text-sm text-muted-foreground">
-                              {new Intl.NumberFormat("en-GB", {
-                                style: "currency",
-                                currency: "GBP",
-                              }).format(item.product.priceInCents / 100)}{" "}
-                              each
+                              {formatPrice(item.product.priceInCents, region.code)} each
                             </p>
                           </div>
                           <Button
@@ -266,10 +293,7 @@ export function CartDrawer({ initialItems, cartItemCount }: CartDrawerProps) {
                           </div>
 
                           <p className="text-base font-semibold">
-                            {new Intl.NumberFormat("en-GB", {
-                              style: "currency",
-                              currency: "GBP",
-                            }).format((item.product.priceInCents * item.quantity) / 100)}
+                            {formatPrice(item.product.priceInCents * item.quantity, region.code)}
                           </p>
                         </div>
                       </div>

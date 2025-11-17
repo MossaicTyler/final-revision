@@ -1,11 +1,12 @@
 "use client"
 
 import Link from "next/link"
-import { User } from "lucide-react"
+import { User } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
 import { AuthDialog } from "./auth-dialog"
 import { CartDrawer } from "./cart-drawer"
+import { RegionSelector } from "./region-selector"
 
 interface HeaderProps {
   user: { id: string; email: string; name: string | null } | null
@@ -43,6 +44,8 @@ export function Header({ user, cartItemCount, cartItems }: HeaderProps) {
                 Track Order
               </Link>
             )}
+
+            <RegionSelector />
 
             <CartDrawer initialItems={cartItems} cartItemCount={cartItemCount} />
 

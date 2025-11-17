@@ -7,8 +7,9 @@ import { getCurrentUser, ensureGuestSession } from "@/lib/auth"
 import { sendOrderConfirmationEmail } from "@/lib/email"
 import { encryptCustomerData, logSecurityEvent, generateOrderReference, checkRateLimit } from "@/lib/security"
 import { isProductInStock, getProductStock } from "@/lib/inventory"
+import { getRegionByCode, getAllowedShippingCountries } from "@/lib/regions"
 
-export async function startCheckoutSession(productId: string) {
+export async function startCheckoutSession(productId: string, regionCode: string = "GB") {
   const user = await getCurrentUser()
   const identifier = user?.id || "guest"
 
@@ -27,6 +28,19 @@ export async function startCheckoutSession(productId: string) {
     throw new Error(`Product with id "${productId}" not found`)
   }
 
+  const region = getRegionByCode(regionCode) || getRegionByCode("GB")!
+
+  let productPrice = product.priceInCents
+  let productName = product.name
+  let productDescription = product.description
+
+  if (product.regionalPricing && product.regionalPricing[regionCode]) {
+    const regionalData = product.regionalPricing[regionCode]
+    productPrice = regionalData.price
+    productName = regionalData.name || product.name
+    productDescription = regionalData.description || product.description
+  }
+
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
   const returnUrl = baseUrl.startsWith("http") ? baseUrl : `https://${baseUrl}`
 
@@ -37,20 +51,22 @@ export async function startCheckoutSession(productId: string) {
       : `${returnUrl}${productImage}`
     : undefined
 
-  const shippingCost = product.priceInCents < 1500 ? 500 : 0 // £5 if under £15, free otherwise
+  const shippingCost = productPrice < 1500 ? 500 : 0 // £5 if under £15, free otherwise
+
+  const allowedCountries = getAllowedShippingCountries(regionCode)
 
   const session = await stripe.checkout.sessions.create({
     ui_mode: "embedded",
     line_items: [
       {
         price_data: {
-          currency: "gbp",
+          currency: region.currency.toLowerCase(),
           product_data: {
-            name: product.name,
-            description: product.description,
+            name: productName,
+            description: productDescription,
             images: absoluteImageUrl ? [absoluteImageUrl] : undefined,
           },
-          unit_amount: product.priceInCents,
+          unit_amount: productPrice,
         },
         quantity: 1,
       },
@@ -61,7 +77,7 @@ export async function startCheckoutSession(productId: string) {
           type: "fixed_amount",
           fixed_amount: {
             amount: shippingCost,
-            currency: "gbp",
+            currency: region.currency.toLowerCase(),
           },
           display_name: shippingCost === 0 ? "Free Standard Shipping" : "Standard Shipping",
           delivery_estimate: {
@@ -81,26 +97,7 @@ export async function startCheckoutSession(productId: string) {
     customer_email: user?.email,
     billing_address_collection: "required",
     shipping_address_collection: {
-      allowed_countries: [
-        "GB",
-        "US",
-        "CA",
-        "AU",
-        "NZ",
-        "IE",
-        "FR",
-        "DE",
-        "IT",
-        "ES",
-        "NL",
-        "BE",
-        "AT",
-        "PT",
-        "SE",
-        "DK",
-        "NO",
-        "FI",
-      ],
+      allowed_countries: allowedCountries as any,
     },
     phone_number_collection: {
       enabled: true,
@@ -111,12 +108,13 @@ export async function startCheckoutSession(productId: string) {
       user_id: user?.id || "",
       product_id: productId,
       checkout_type: "buy_now",
+      region_code: regionCode,
     },
   })
 
   await logSecurityEvent("checkout_started", "buy_now", "success", {
     userId: user?.id,
-    metadata: { productId, sessionId: session.id },
+    metadata: { productId, sessionId: session.id, regionCode },
   })
 
   return session.client_secret
@@ -124,6 +122,7 @@ export async function startCheckoutSession(productId: string) {
 
 export async function startCartCheckoutSession(
   items: Array<{ productId: string; quantity: number }>,
+  regionCode: string = "GB",
   guestInfo?: { email: string; name: string },
 ) {
   const user = await getCurrentUser()
@@ -139,6 +138,8 @@ export async function startCartCheckoutSession(
     })
     throw new Error("Too many checkout attempts. Please try again later.")
   }
+
+  const region = getRegionByCode(regionCode) || getRegionByCode("GB")!
 
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
   const returnUrl = baseUrl.startsWith("http") ? baseUrl : `https://${baseUrl}`
@@ -170,6 +171,17 @@ export async function startCartCheckoutSession(
       throw new Error(`Product with id "${item.productId}" not found`)
     }
 
+    let productPrice = product.priceInCents
+    let productName = product.name
+    let productDescription = product.description
+
+    if (product.regionalPricing && product.regionalPricing[regionCode]) {
+      const regionalData = product.regionalPricing[regionCode]
+      productPrice = regionalData.price
+      productName = regionalData.name || product.name
+      productDescription = regionalData.description || product.description
+    }
+
     const productImage = product.images?.[0]
     const absoluteImageUrl = productImage
       ? productImage.startsWith("http")
@@ -179,13 +191,13 @@ export async function startCartCheckoutSession(
 
     return {
       price_data: {
-        currency: "gbp",
+        currency: region.currency.toLowerCase(),
         product_data: {
-          name: product.name,
-          description: product.description,
+          name: productName,
+          description: productDescription,
           images: absoluteImageUrl ? [absoluteImageUrl] : undefined,
         },
-        unit_amount: product.priceInCents,
+        unit_amount: productPrice,
       },
       quantity: item.quantity,
     }
@@ -193,13 +205,22 @@ export async function startCartCheckoutSession(
 
   const subtotal = items.reduce((sum, item) => {
     const product = PRODUCTS.find((p) => p.id === item.productId)
-    return sum + (product ? product.priceInCents * item.quantity : 0)
+    if (!product) return sum
+
+    let productPrice = product.priceInCents
+    if (product.regionalPricing && product.regionalPricing[regionCode]) {
+      productPrice = product.regionalPricing[regionCode].price
+    }
+
+    return sum + productPrice * item.quantity
   }, 0)
 
   const shippingCost = subtotal < 1500 ? 500 : 0 // £5 if under £15, free otherwise
 
   const customerEmail = user?.email || guestInfo?.email
   const customerName = user?.name || guestInfo?.name
+
+  const allowedCountries = getAllowedShippingCountries(regionCode)
 
   const session = await stripe.checkout.sessions.create({
     ui_mode: "embedded",
@@ -210,7 +231,7 @@ export async function startCartCheckoutSession(
           type: "fixed_amount",
           fixed_amount: {
             amount: shippingCost,
-            currency: "gbp",
+            currency: region.currency.toLowerCase(),
           },
           display_name: shippingCost === 0 ? "Free Standard Shipping" : "Standard Shipping",
           delivery_estimate: {
@@ -230,26 +251,7 @@ export async function startCartCheckoutSession(
     customer_email: customerEmail,
     billing_address_collection: "required",
     shipping_address_collection: {
-      allowed_countries: [
-        "GB",
-        "US",
-        "CA",
-        "AU",
-        "NZ",
-        "IE",
-        "FR",
-        "DE",
-        "IT",
-        "ES",
-        "NL",
-        "BE",
-        "AT",
-        "PT",
-        "SE",
-        "DK",
-        "NO",
-        "FI",
-      ],
+      allowed_countries: allowedCountries as any,
     },
     phone_number_collection: {
       enabled: true,
@@ -263,12 +265,13 @@ export async function startCartCheckoutSession(
       checkout_type: "cart",
       guest_email: guestInfo?.email || "",
       guest_name: guestInfo?.name || "",
+      region_code: regionCode,
     },
   })
 
   await logSecurityEvent("checkout_started", "cart", "success", {
     userId: user?.id,
-    metadata: { itemCount: items.length, sessionId: session.id },
+    metadata: { itemCount: items.length, sessionId: session.id, regionCode },
   })
 
   return session.client_secret
@@ -308,7 +311,6 @@ export async function createOrderFromSession(sessionId: string) {
 
     console.log("[v0] Payment intent ID:", paymentIntentId)
 
-    // Check if order already exists (webhook may have already created it)
     const existingOrder = await sql`
       SELECT id FROM orders 
       WHERE stripe_payment_intent_id = ${paymentIntentId}
@@ -328,14 +330,13 @@ export async function createOrderFromSession(sessionId: string) {
 
     console.log("[v0] User info:", { userId, guestEmail, userEmail: user?.email })
 
-    // Encrypt customer data
     const customerData = {
       name: session.shipping_details?.name || session.customer_details?.name || "Customer",
       email: session.customer_email || user?.email || "",
       phone: session.customer_details?.phone || undefined,
       address: {
         line1: session.shipping_details?.address?.line1 || "",
-        line2: session.shipping_details?.address?.line2 || undefined,
+        line2: session.shipping_details?.address?.line2 || "",
         city: session.shipping_details?.address?.city || "",
         state: session.shipping_details?.address?.state || "",
         postal_code: session.shipping_details?.address?.postal_code || "",
@@ -354,7 +355,6 @@ export async function createOrderFromSession(sessionId: string) {
 
     console.log("[v0] Encrypted data and order reference generated")
 
-    // Create order with encrypted data
     const orderResult = await sql`
       INSERT INTO orders (
         user_id, 
@@ -390,7 +390,6 @@ export async function createOrderFromSession(sessionId: string) {
     const orderId = orderResult[0].id
     console.log("[v0] Order created from success page:", orderId)
 
-    // Parse items from metadata
     const checkoutType = session.metadata?.checkout_type || "cart"
     let items = []
 
@@ -438,7 +437,6 @@ export async function createOrderFromSession(sessionId: string) {
 
     console.log("[v0] Order items created:", orderItems.length)
 
-    // Add tracking event
     await sql`
       INSERT INTO order_tracking_events (order_id, status, description, event_time)
       VALUES (${orderId}, 'Order Placed', 'Your order has been received and is being processed', NOW())
@@ -453,7 +451,6 @@ export async function createOrderFromSession(sessionId: string) {
     if (customerEmail) {
       console.log("[v0] Attempting to send confirmation email to:", customerEmail)
 
-      // Send email but don't await - let it happen in background
       sendOrderConfirmationEmail(customerEmail, orderId, {
         items: orderItems,
         total: session.amount_total || 0,
@@ -482,7 +479,6 @@ export async function createOrderFromSession(sessionId: string) {
 
     await clearCartAfterPurchase(session)
 
-    // Log security event
     await logSecurityEvent("order_created", "purchase", "success", {
       userId: userId || undefined,
       resourceType: "order",
@@ -519,11 +515,9 @@ async function clearCartAfterPurchase(session: any) {
     const guestSessionId = session.metadata?.session_id
 
     if (userId) {
-      // Clear cart for logged-in user
       await sql`DELETE FROM cart_items WHERE user_id = ${userId}`
       console.log("[v0] Cart cleared for user:", userId)
     } else if (guestSessionId) {
-      // Clear cart for guest using session_id
       await sql`DELETE FROM cart_items WHERE session_id = ${guestSessionId}`
       console.log("[v0] Cart cleared for guest session:", guestSessionId)
     } else {
@@ -531,6 +525,5 @@ async function clearCartAfterPurchase(session: any) {
     }
   } catch (error) {
     console.error("[v0] Error clearing cart:", error)
-    // Don't throw - cart clearing is non-critical
   }
 }

@@ -9,6 +9,16 @@ export interface Product {
   originalPriceInCents?: number // Original price before discount
   onSale?: boolean // Whether product is on sale
   maxStock?: number // Maximum available quantity (defaults to 100)
+  regionalPricing?: Record<
+    string,
+    {
+      price: number // Manual price in local currency (in cents)
+      originalPrice?: number // Manual original price (in cents)
+      name?: string // Localized name
+      description?: string // Localized description
+      details?: string // Localized details
+    }
+  >
 }
 
 // This is the source of truth for all products.
@@ -24,6 +34,16 @@ export const PRODUCTS: Product[] = [
     details: "Not a toy, but a totem of tenderness, designed to elevate the everyday.",
     images: ["/mochi.jpg", "/mochi-2.jpg"],
     maxStock: 50,
+    regionalPricing: {
+      US: { price: 3200 },
+      DE: { price: 2900, name: "Mochi das Laufschwein", description: "Mochi das Laufschwein animiert durch Schwung" },
+      AU: { price: 4800 },
+      JP: { price: 4500 },
+      SG: { price: 4200 },
+      CA: { price: 4300 },
+      EU: { price: 2900 },
+      FR: { price: 2900 },
+    },
   },
   {
     id: "speckles-the-spotted-pig",
@@ -37,6 +57,16 @@ export const PRODUCTS: Product[] = [
       'Meet the Spotted Trotter, the pinnacle of plush artistry from our acclaimed "Running Series." This is not merely a toy; it is a sculptural piece, a tactile comfort, and a whimsical narrative captured in the most exquisite materials.',
     images: ["/speckles-the-spotted-pig.jpg", "/speckles-the-spotted-pig-2.jpg"],
     maxStock: 30,
+    regionalPricing: {
+      US: { price: 3200 , originalPrice: 3800 },
+      DE: { price: 2900 , originalPrice: 3500 },
+      AU: { price: 4800 , originalPrice: 5400 },
+      JP: { price: 4500 , originalPrice: 5100 },
+      SG: { price: 4200 , originalPrice: 4800 },
+      CA: { price: 4300 , originalPrice: 4900 },
+      EU: { price: 2900 , originalPrice: 3500 },
+      FR: { price: 2900 , originalPrice: 3500 },
+    },
   },
   {
     id: "gullin-the-walnut-boar",
@@ -50,6 +80,16 @@ export const PRODUCTS: Product[] = [
       "Gullin settles into your arms with a grounding, comforting presence, perfect for alleviating anxiety or as a sleep companion.",
     images: ["/gullin-the-walnut-boar.jpg"],
     maxStock: 25,
+    regionalPricing: {
+      US: { price: 3300, originalPrice: 4450 },
+      EU: { price: 3000, originalPrice: 4050 },
+      AU: { price: 4900, originalPrice: 6600 },
+      JP: { price: 4700, originalPrice: 6300 },
+      SG: { price: 4400, originalPrice: 5900 },
+      CA: { price: 4450, originalPrice: 6000 },
+      DE: { price: 3000, originalPrice: 4050 },
+      FR: { price: 3000, originalPrice: 4050 },
+    },
   },
   {
     id: "bartholomew-the-barley-boar",
@@ -62,6 +102,16 @@ export const PRODUCTS: Product[] = [
     details: 'Bartho can be captured in a graceful, dynamic "trot," his pose is one of gentle momentum and quiet joy.',
     images: ["/bartholomew-the-barley-boar.jpg"],
     maxStock: 25,
+    regionalPricing: {
+      US: { price: 3300, originalPrice: 4450 },
+      EU: { price: 3000, originalPrice: 4050 },
+      AU: { price: 4900, originalPrice: 6600 },
+      JP: { price: 4700, originalPrice: 6300 },
+      SG: { price: 4400, originalPrice: 5900 },
+      CA: { price: 4450, originalPrice: 6000 },
+      DE: { price: 3000, originalPrice: 4050 },
+      FR: { price: 3000, originalPrice: 4050 },
+    },
   },
   {
     id: "sunny-charm",
@@ -72,6 +122,16 @@ export const PRODUCTS: Product[] = [
     details: "A treasured token designed to dispel grey skies and bring a touch of handmade warmth to every moment.",
     images: ["/sunny-charm.jpg"],
     maxStock: 100,
+    regionalPricing: {
+      US: { price: 1900 },
+      EU: { price: 1750 },
+      AU: { price: 2850 },
+      JP: { price: 2700 },
+      SG: { price: 2550 },
+      CA: { price: 2600 },
+      DE: { price: 1750 },
+      FR: { price: 1750 },
+    },
   },
   {
     id: "sunniette-red-bow-charm",
@@ -82,6 +142,16 @@ export const PRODUCTS: Product[] = [
     details: "A treasured token designed to dispel grey skies and bring a touch of handmade warmth to every moment.",
     images: ["/sunniette-red-bow-charm.jpg"],
     maxStock: 100,
+    regionalPricing: {
+      US: { price: 1900 },
+      EU: { price: 1750 },
+      AU: { price: 2850 },
+      JP: { price: 2700 },
+      SG: { price: 2550 },
+      CA: { price: 2600 },
+      DE: { price: 1750 },
+      FR: { price: 1750 },
+    },
   },
   {
     id: "sunniette-pink-bow-charm",
@@ -92,6 +162,16 @@ export const PRODUCTS: Product[] = [
     details: "A treasured token designed to dispel grey skies and bring a touch of handmade warmth to every moment.",
     images: ["/sunniette-pink-bow-charm.jpg"],
     maxStock: 100,
+    regionalPricing: {
+      US: { price: 2300 },
+      EU: { price: 2100 },
+      AU: { price: 3400 },
+      JP: { price: 3250 },
+      SG: { price: 3050 },
+      CA: { price: 3100 },
+      DE: { price: 2100 },
+      FR: { price: 2100 },
+    },
   },
   {
     id: "sunniette-brown-bow-charm",
@@ -102,6 +182,16 @@ export const PRODUCTS: Product[] = [
     details: "A treasured token designed to dispel grey skies and bring a touch of handmade warmth to every moment.",
     images: ["/sunniette-brown-bow-charm.jpg"],
     maxStock: 100,
+    regionalPricing: {
+      US: { price: 1900 },
+      EU: { price: 1750 },
+      AU: { price: 2850 },
+      JP: { price: 2700 },
+      SG: { price: 2550 },
+      CA: { price: 2600 },
+      DE: { price: 1750 },
+      FR: { price: 1750 },
+    },
   },
   {
     id: "sunniette-blue-bow-charm",
@@ -112,6 +202,16 @@ export const PRODUCTS: Product[] = [
     details: "A treasured token designed to dispel grey skies and bring a touch of handmade warmth to every moment.",
     images: ["/sunniette-blue-bow-charm.jpg"],
     maxStock: 100,
+    regionalPricing: {
+      US: { price: 1900 },
+      EU: { price: 1750 },
+      AU: { price: 2850 },
+      JP: { price: 2700 },
+      SG: { price: 2550 },
+      CA: { price: 2600 },
+      DE: { price: 1750 },
+      FR: { price: 1750 },
+    },
   },
   {
     id: "sunniette-black-bow-charm",
@@ -122,6 +222,16 @@ export const PRODUCTS: Product[] = [
     details: "A treasured token designed to dispel grey skies and bring a touch of handmade warmth to every moment.",
     images: ["/sunniette-black-bow-charm.jpg"],
     maxStock: 100,
+    regionalPricing: {
+      US: { price: 1900 },
+      EU: { price: 1750 },
+      AU: { price: 2850 },
+      JP: { price: 2700 },
+      SG: { price: 2550 },
+      CA: { price: 2600 },
+      DE: { price: 1750 },
+      FR: { price: 1750 },
+    },
   },
   {
     id: "sunny-swimming-charm",
@@ -132,6 +242,16 @@ export const PRODUCTS: Product[] = [
     details: "A treasured token designed to dispel grey skies and bring a touch of handmade warmth to every moment.",
     images: ["/sunny-swimming-charm.jpg"],
     maxStock: 100,
+    regionalPricing: {
+      US: { price: 2300 },
+      EU: { price: 2100 },
+      AU: { price: 3400 },
+      JP: { price: 3250 },
+      SG: { price: 3050 },
+      CA: { price: 3100 },
+      DE: { price: 2100 },
+      FR: { price: 2100 },
+    },
   },
   {
     id: "sunny-football-charm",
@@ -142,6 +262,16 @@ export const PRODUCTS: Product[] = [
     details: "A treasured token designed to dispel grey skies and bring a touch of handmade warmth to every moment.",
     images: ["/sunny-football-charm.jpg"],
     maxStock: 100,
+    regionalPricing: {
+      US: { price: 2300 },
+      EU: { price: 2100 },
+      AU: { price: 3400 },
+      JP: { price: 3250 },
+      SG: { price: 3050 },
+      CA: { price: 3100 },
+      DE: { price: 2100 },
+      FR: { price: 2100 },
+    },
   },
   {
     id: "sunny-basketball-charm",
@@ -152,6 +282,16 @@ export const PRODUCTS: Product[] = [
     details: "A treasured token designed to dispel grey skies and bring a touch of handmade warmth to every moment.",
     images: ["/sunny-basketball-charm.jpg"],
     maxStock: 100,
+    regionalPricing: {
+      US: { price: 2300 },
+      EU: { price: 2100 },
+      AU: { price: 3400 },
+      JP: { price: 3250 },
+      SG: { price: 3050 },
+      CA: { price: 3100 },
+      DE: { price: 2100 },
+      FR: { price: 2100 },
+    },
   },
   {
     id: "sunny-table-tennis-charm",
@@ -162,6 +302,16 @@ export const PRODUCTS: Product[] = [
     details: "A treasured token designed to dispel grey skies and bring a touch of handmade warmth to every moment.",
     images: ["/sunny-table-tennis-charm.jpg"],
     maxStock: 100,
+    regionalPricing: {
+      US: { price: 2300 },
+      EU: { price: 2100 },
+      AU: { price: 3400 },
+      JP: { price: 3250 },
+      SG: { price: 3050 },
+      CA: { price: 3100 },
+      DE: { price: 2100 },
+      FR: { price: 2100 },
+    },
   },
 ]
 

@@ -2,13 +2,14 @@
 
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import { Minus, Plus, Trash2, Tag } from "lucide-react"
+import { Minus, Plus, Trash2, Tag } from 'lucide-react'
 import { removeFromCart, updateCartQuantity } from "@/app/actions/cart"
 import { useState } from "react"
 import type { Product } from "@/lib/products"
 import { LoadingSpinner } from "./loading-spinner"
-import { formatPrice } from "@/lib/currency"
 import { Badge } from "@/components/ui/badge"
+import { useRegion } from "@/contexts/region-context"
+import { formatPrice as formatRegionalPrice } from "@/lib/regions"
 
 interface CartItemProps {
   item: {
@@ -22,6 +23,7 @@ interface CartItemProps {
 
 export function CartItem({ item, onUpdate }: CartItemProps) {
   const [loading, setLoading] = useState(false)
+  const { region } = useRegion()
 
   if (!item.product) return null
 
@@ -32,11 +34,11 @@ export function CartItem({ item, onUpdate }: CartItemProps) {
         )
       : 0
 
-  const formattedPrice = formatPrice(item.product.priceInCents, "GBP")
+  const formattedPrice = formatRegionalPrice(item.product.priceInCents, region.code)
   const formattedOriginalPrice = item.product.originalPriceInCents
-    ? formatPrice(item.product.originalPriceInCents, "GBP")
+    ? formatRegionalPrice(item.product.originalPriceInCents, region.code)
     : null
-  const formattedTotal = formatPrice(item.product.priceInCents * item.quantity, "GBP")
+  const formattedTotal = formatRegionalPrice(item.product.priceInCents * item.quantity, region.code)
 
   async function handleUpdateQuantity(newQuantity: number) {
     if (newQuantity < 1) return
