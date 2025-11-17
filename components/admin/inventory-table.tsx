@@ -7,9 +7,9 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
-import { Edit2, Save, X, TrendingUp, TrendingDown, Tag } from "lucide-react"
+import { Edit2, Save, X, TrendingUp, TrendingDown, Tag, Globe } from 'lucide-react'
 import { updateProductFull, adjustCurrentStock } from "@/app/actions/inventory"
-import { useRouter } from "next/navigation"
+import { useRouter } from 'next/navigation'
 import type { InventoryItem } from "@/app/actions/inventory"
 import {
   Dialog,
@@ -20,6 +20,8 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import { PRODUCTS } from "@/lib/products"
+import { REGIONS } from "@/lib/regions"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export function InventoryTable({ inventory }: { inventory: InventoryItem[] }) {
   const router = useRouter()
@@ -35,6 +37,7 @@ export function InventoryTable({ inventory }: { inventory: InventoryItem[] }) {
     onSale: boolean
     originalPriceInCents: string
     stockAdjustment: string
+    regionalPricing: Record<string, { price: string; name: string; description: string }>
   }>({
     id: "",
     name: "",
@@ -46,12 +49,27 @@ export function InventoryTable({ inventory }: { inventory: InventoryItem[] }) {
     onSale: false,
     originalPriceInCents: "",
     stockAdjustment: "0",
+    regionalPricing: {},
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const handleEdit = (item: InventoryItem) => {
     const product = PRODUCTS.find((p) => p.id === item.productId)
+    const regionalPricing: Record<string, { price: string; name: string; description: string }> = {}
+    REGIONS.forEach((region) => {
+      if (product?.regionalPricing?.[region.code]) {
+        const rp = product.regionalPricing[region.code]
+        regionalPricing[region.code] = {
+          price: rp.price.toString(),
+          name: rp.name || "",
+          description: rp.description || "",
+        }
+      } else {
+        regionalPricing[region.code] = { price: "", name: "", description: "" }
+      }
+    })
+    
     setEditingId(item.productId)
     setEditData({
       id: item.productId,
@@ -64,6 +82,7 @@ export function InventoryTable({ inventory }: { inventory: InventoryItem[] }) {
       onSale: item.onSale || false,
       originalPriceInCents: item.originalPriceInCents?.toString() || item.priceInCents.toString(),
       stockAdjustment: "0",
+      regionalPricing,
     })
     setError(null)
   }
@@ -81,6 +100,7 @@ export function InventoryTable({ inventory }: { inventory: InventoryItem[] }) {
       onSale: false,
       originalPriceInCents: "",
       stockAdjustment: "0",
+      regionalPricing: {},
     })
     setError(null)
   }
@@ -141,6 +161,7 @@ export function InventoryTable({ inventory }: { inventory: InventoryItem[] }) {
       priceInCents,
       onSale: editData.onSale,
       originalPriceInCents,
+      regionalPricing: editData.regionalPricing,
     })
 
     if (!result.success) {
@@ -171,6 +192,7 @@ export function InventoryTable({ inventory }: { inventory: InventoryItem[] }) {
       onSale: false,
       originalPriceInCents: "",
       stockAdjustment: "0",
+      regionalPricing: {},
     })
     router.refresh()
     setLoading(false)
@@ -334,164 +356,267 @@ export function InventoryTable({ inventory }: { inventory: InventoryItem[] }) {
 
       {/* Edit Dialog */}
       <Dialog open={editingId !== null} onOpenChange={(open) => !open && handleCancel()}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Product</DialogTitle>
-            <DialogDescription>Update all product information, pricing, and inventory</DialogDescription>
+            <DialogDescription>Update all product information, pricing, inventory, and regional settings</DialogDescription>
           </DialogHeader>
 
           {editingId && (
-            <div className="space-y-4 py-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="product-id">Product ID *</Label>
-                  <Input
-                    id="product-id"
-                    value={editData.id}
-                    onChange={(e) => setEditData({ ...editData, id: e.target.value })}
-                    placeholder="e.g., mochi-pig"
-                    disabled={loading}
-                  />
-                  <p className="text-xs text-muted-foreground">Lowercase letters, numbers, and hyphens only</p>
-                </div>
+            <Tabs defaultValue="basic" className="w-full">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="basic">Basic Info</TabsTrigger>
+                <TabsTrigger value="pricing">Pricing & Stock</TabsTrigger>
+                <TabsTrigger value="regional">
+                  <Globe className="h-4 w-4 mr-1" />
+                  Regional Pricing
+                </TabsTrigger>
+              </TabsList>
 
-                <div className="space-y-2">
-                  <Label htmlFor="category">Category *</Label>
-                  <Input
-                    id="category"
-                    value={editData.category}
-                    onChange={(e) => setEditData({ ...editData, category: e.target.value })}
-                    placeholder="e.g., Running Boars"
-                    disabled={loading}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="name">Product Name *</Label>
-                <Input
-                  id="name"
-                  value={editData.name}
-                  onChange={(e) => setEditData({ ...editData, name: e.target.value })}
-                  placeholder="e.g., Mochi the Running Pig"
-                  disabled={loading}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
-                <Input
-                  id="description"
-                  value={editData.description}
-                  onChange={(e) => setEditData({ ...editData, description: e.target.value })}
-                  placeholder="Short description"
-                  disabled={loading}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="details">Details</Label>
-                <textarea
-                  id="details"
-                  value={editData.details}
-                  onChange={(e) => setEditData({ ...editData, details: e.target.value })}
-                  placeholder="Detailed product information"
-                  disabled={loading}
-                  className="w-full min-h-[100px] px-3 py-2 text-sm border border-input bg-background rounded-md"
-                />
-              </div>
-
-              <div className="border-t pt-4">
-                <h4 className="font-medium mb-3">Pricing & Sale</h4>
+              <TabsContent value="basic" className="space-y-4 py-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="price">Current Price (pence) *</Label>
+                    <Label htmlFor="product-id">Product ID *</Label>
                     <Input
-                      id="price"
-                      type="number"
-                      value={editData.priceInCents}
-                      onChange={(e) => setEditData({ ...editData, priceInCents: e.target.value })}
-                      placeholder="e.g., 2500"
-                      min="0"
+                      id="product-id"
+                      value={editData.id}
+                      onChange={(e) => setEditData({ ...editData, id: e.target.value })}
+                      placeholder="e.g., mochi-pig"
                       disabled={loading}
                     />
-                    <p className="text-sm text-muted-foreground">
-                      Display: {formatPrice(Number(editData.priceInCents) || 0)}
-                    </p>
+                    <p className="text-xs text-muted-foreground">Lowercase letters, numbers, and hyphens only</p>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="max-stock">Maximum Stock *</Label>
+                    <Label htmlFor="category">Category *</Label>
                     <Input
-                      id="max-stock"
-                      type="number"
-                      value={editData.maxStock}
-                      onChange={(e) => setEditData({ ...editData, maxStock: e.target.value })}
-                      placeholder="e.g., 100"
-                      min="0"
+                      id="category"
+                      value={editData.category}
+                      onChange={(e) => setEditData({ ...editData, category: e.target.value })}
+                      placeholder="e.g., Running Boars"
                       disabled={loading}
                     />
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-2 mt-4">
-                  <Switch
-                    id="on-sale"
-                    checked={editData.onSale}
-                    onCheckedChange={(checked) => setEditData({ ...editData, onSale: checked })}
-                    disabled={loading}
-                  />
-                  <Label htmlFor="on-sale">Mark as On Sale</Label>
-                </div>
-
-                {editData.onSale && (
-                  <div className="space-y-2 mt-4">
-                    <Label htmlFor="original-price">Original Price (pence)</Label>
-                    <Input
-                      id="original-price"
-                      type="number"
-                      value={editData.originalPriceInCents}
-                      onChange={(e) => setEditData({ ...editData, originalPriceInCents: e.target.value })}
-                      placeholder="e.g., 3500"
-                      min="0"
-                      disabled={loading}
-                    />
-                    <p className="text-sm text-muted-foreground">
-                      Display: {formatPrice(Number(editData.originalPriceInCents) || 0)}
-                    </p>
-                    {Number(editData.originalPriceInCents) > 0 && Number(editData.priceInCents) > 0 && (
-                      <p className="text-sm font-medium text-red-600 dark:text-red-400">
-                        {Math.round(
-                          ((Number(editData.originalPriceInCents) - Number(editData.priceInCents)) /
-                            Number(editData.originalPriceInCents)) *
-                            100,
-                        )}
-                        % OFF
-                      </p>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              <div className="border-t pt-4">
-                <h4 className="font-medium mb-3">Stock Adjustment</h4>
                 <div className="space-y-2">
-                  <Label htmlFor="stock-adjustment">Adjust Current Stock</Label>
+                  <Label htmlFor="name">Product Name *</Label>
                   <Input
-                    id="stock-adjustment"
-                    type="number"
-                    value={editData.stockAdjustment}
-                    onChange={(e) => setEditData({ ...editData, stockAdjustment: e.target.value })}
-                    placeholder="0"
+                    id="name"
+                    value={editData.name}
+                    onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+                    placeholder="e.g., Mochi the Running Pig"
                     disabled={loading}
                   />
-                  <p className="text-xs text-muted-foreground">
-                    Enter positive number to increase stock, negative to decrease. This adjusts the current available
-                    quantity.
-                  </p>
                 </div>
-              </div>
-            </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="description">Description</Label>
+                  <Input
+                    id="description"
+                    value={editData.description}
+                    onChange={(e) => setEditData({ ...editData, description: e.target.value })}
+                    placeholder="Short description"
+                    disabled={loading}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="details">Details</Label>
+                  <textarea
+                    id="details"
+                    value={editData.details}
+                    onChange={(e) => setEditData({ ...editData, details: e.target.value })}
+                    placeholder="Detailed product information"
+                    disabled={loading}
+                    className="w-full min-h-[100px] px-3 py-2 text-sm border border-input bg-background rounded-md"
+                  />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="pricing" className="space-y-4 py-4">
+                <div className="space-y-4">
+                  <h4 className="font-medium">Default Pricing (GB)</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="price">Current Price (pence) *</Label>
+                      <Input
+                        id="price"
+                        type="number"
+                        value={editData.priceInCents}
+                        onChange={(e) => setEditData({ ...editData, priceInCents: e.target.value })}
+                        placeholder="e.g., 2500"
+                        min="0"
+                        disabled={loading}
+                      />
+                      <p className="text-sm text-muted-foreground">
+                        Display: {formatPrice(Number(editData.priceInCents) || 0)}
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="max-stock">Maximum Stock *</Label>
+                      <Input
+                        id="max-stock"
+                        type="number"
+                        value={editData.maxStock}
+                        onChange={(e) => setEditData({ ...editData, maxStock: e.target.value })}
+                        placeholder="e.g., 100"
+                        min="0"
+                        disabled={loading}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="on-sale"
+                      checked={editData.onSale}
+                      onCheckedChange={(checked) => setEditData({ ...editData, onSale: checked })}
+                      disabled={loading}
+                    />
+                    <Label htmlFor="on-sale">Mark as On Sale</Label>
+                  </div>
+
+                  {editData.onSale && (
+                    <div className="space-y-2">
+                      <Label htmlFor="original-price">Original Price (pence)</Label>
+                      <Input
+                        id="original-price"
+                        type="number"
+                        value={editData.originalPriceInCents}
+                        onChange={(e) => setEditData({ ...editData, originalPriceInCents: e.target.value })}
+                        placeholder="e.g., 3500"
+                        min="0"
+                        disabled={loading}
+                      />
+                      <p className="text-sm text-muted-foreground">
+                        Display: {formatPrice(Number(editData.originalPriceInCents) || 0)}
+                      </p>
+                      {Number(editData.originalPriceInCents) > 0 && Number(editData.priceInCents) > 0 && (
+                        <p className="text-sm font-medium text-red-600 dark:text-red-400">
+                          {Math.round(
+                            ((Number(editData.originalPriceInCents) - Number(editData.priceInCents)) /
+                              Number(editData.originalPriceInCents)) *
+                              100,
+                          )}
+                          % OFF
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <div className="border-t pt-4">
+                  <h4 className="font-medium mb-3">Stock Adjustment</h4>
+                  <div className="space-y-2">
+                    <Label htmlFor="stock-adjustment">Adjust Current Stock</Label>
+                    <Input
+                      id="stock-adjustment"
+                      type="number"
+                      value={editData.stockAdjustment}
+                      onChange={(e) => setEditData({ ...editData, stockAdjustment: e.target.value })}
+                      placeholder="0"
+                      disabled={loading}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Enter positive number to increase stock, negative to decrease. This adjusts the current available
+                      quantity.
+                    </p>
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="regional" className="space-y-4 py-4">
+                <div className="space-y-4">
+                  <p className="text-sm text-muted-foreground">
+                    Set custom pricing and localized names/descriptions for each region. Leave price blank to use default GB price with exchange rate conversion.
+                  </p>
+                  
+                  <div className="grid gap-6">
+                    {REGIONS.filter(r => r.code !== 'GB').map((region) => (
+                      <div key={region.code} className="border border-border/40 rounded-lg p-4 space-y-3">
+                        <div className="flex items-center gap-2">
+                          <span className="text-2xl">{region.flag}</span>
+                          <div>
+                            <h4 className="font-semibold">{region.name}</h4>
+                            <p className="text-xs text-muted-foreground">{region.currency} ({region.currencySymbol})</p>
+                          </div>
+                        </div>
+                        
+                        <div className="grid gap-3">
+                          <div className="space-y-2">
+                            <Label htmlFor={`price-${region.code}`}>Price (cents)</Label>
+                            <Input
+                              id={`price-${region.code}`}
+                              type="number"
+                              value={editData.regionalPricing[region.code]?.price || ""}
+                              onChange={(e) => setEditData({
+                                ...editData,
+                                regionalPricing: {
+                                  ...editData.regionalPricing,
+                                  [region.code]: {
+                                    ...editData.regionalPricing[region.code],
+                                    price: e.target.value,
+                                  }
+                                }
+                              })}
+                              placeholder={`e.g., 3200 (${region.currencySymbol}32.00)`}
+                              disabled={loading}
+                            />
+                            {editData.regionalPricing[region.code]?.price && (
+                              <p className="text-sm text-muted-foreground">
+                                Display: {region.currencySymbol}{(Number(editData.regionalPricing[region.code].price) / 100).toFixed(2)}
+                              </p>
+                            )}
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor={`name-${region.code}`}>Localized Name (optional)</Label>
+                            <Input
+                              id={`name-${region.code}`}
+                              value={editData.regionalPricing[region.code]?.name || ""}
+                              onChange={(e) => setEditData({
+                                ...editData,
+                                regionalPricing: {
+                                  ...editData.regionalPricing,
+                                  [region.code]: {
+                                    ...editData.regionalPricing[region.code],
+                                    name: e.target.value,
+                                  }
+                                }
+                              })}
+                              placeholder="Translated product name"
+                              disabled={loading}
+                            />
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor={`description-${region.code}`}>Localized Description (optional)</Label>
+                            <Input
+                              id={`description-${region.code}`}
+                              value={editData.regionalPricing[region.code]?.description || ""}
+                              onChange={(e) => setEditData({
+                                ...editData,
+                                regionalPricing: {
+                                  ...editData.regionalPricing,
+                                  [region.code]: {
+                                    ...editData.regionalPricing[region.code],
+                                    description: e.target.value,
+                                  }
+                                }
+                              })}
+                              placeholder="Translated description"
+                              disabled={loading}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </TabsContent>
+            </Tabs>
           )}
 
           <DialogFooter>
