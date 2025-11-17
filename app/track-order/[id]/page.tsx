@@ -214,7 +214,7 @@ export default async function GuestOrderTrackingPage({
                           <p className="text-sm font-medium">
                             {new Intl.NumberFormat("en-GB", {
                               style: "currency",
-                              currency: "GBP",
+                              currency: order.currency.toUpperCase(),
                             }).format(item.price / 100)}{" "}
                             each
                           </p>
@@ -222,7 +222,7 @@ export default async function GuestOrderTrackingPage({
                         <p className="font-semibold">
                           {new Intl.NumberFormat("en-GB", {
                             style: "currency",
-                            currency: "GBP",
+                            currency: order.currency.toUpperCase(),
                           }).format((item.price * item.quantity) / 100)}
                         </p>
                       </div>

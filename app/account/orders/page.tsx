@@ -98,7 +98,7 @@ export default async function OrdersPage() {
                       <p className="text-sm font-medium">
                         {new Intl.NumberFormat("en-GB", {
                           style: "currency",
-                          currency: order.currency.toUpperCase(),
+                          currency: "GBP",
                         }).format((item.price * item.quantity) / 100)}
                       </p>
                     </div>
