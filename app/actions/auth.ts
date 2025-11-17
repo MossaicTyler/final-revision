@@ -96,7 +96,7 @@ export async function signIn(formData: FormData) {
 
   try {
     const result = await sql`
-      SELECT id, email, name, password_hash, email_verified, oauth_provider
+      SELECT id, email, name, password_hash, email_verified
       FROM users 
       WHERE email = ${email}
     `
@@ -106,12 +106,6 @@ export async function signIn(formData: FormData) {
     }
 
     const user = result[0]
-
-    if (user.oauth_provider) {
-      return {
-        error: `This account uses ${user.oauth_provider} sign-in. Please use the ${user.oauth_provider} button.`,
-      }
-    }
 
     const isValid = await verifyPassword(password, user.password_hash)
 
@@ -261,6 +255,7 @@ export async function verifyEmail(token: string) {
       tokenExpires: user.verification_token_expires,
     })
 
+    // Check if already verified
     if (user.email_verified) {
       console.log("[v0] User email already verified")
       return { error: "Email already verified. You can sign in now." }
@@ -281,6 +276,7 @@ export async function verifyEmail(token: string) {
       return { error: "Verification link has expired. Please request a new one." }
     }
 
+    // Mark email as verified
     console.log("[v0] Marking email as verified for user:", user.email)
 
     await sql`
@@ -296,6 +292,7 @@ export async function verifyEmail(token: string) {
 
     await mergeGuestCartToUser(user.id)
 
+    // Create session
     const sessionToken = await createSession({
       id: user.id,
       email: user.email,
@@ -305,86 +302,13 @@ export async function verifyEmail(token: string) {
 
     await setSessionCookie(sessionToken)
 
-    console.log("[v0] Session created successfully - user is now logged in")
+    console.log("[v0] Session created successfully")
 
     return { success: true }
   } catch (error) {
     console.error("[v0] Email verification error:", error)
-    return { error: "Failed to verify email. Please try again or contact support." }
+    return { error: "Failed to verify email" }
   }
-}
-
-export async function signInWithGoogle(googleUser: { id: string; email: string; name: string; picture?: string }) {
-  try {
-    // Check if user exists with this Google ID
-    const result = await sql`
-      SELECT id, email, name, email_verified
-      FROM users
-      WHERE oauth_provider = 'google' AND oauth_provider_id = ${googleUser.id}
-    `
-
-    let user
-
-    if (result.length === 0) {
-      // Check if email already exists with different provider
-      const existingEmail = await sql`
-        SELECT id, oauth_provider FROM users WHERE email = ${googleUser.email}
-      `
-
-      if (existingEmail.length > 0 && !existingEmail[0].oauth_provider) {
-        return {
-          error: "An account with this email already exists. Please sign in with your password.",
-        }
-      }
-
-      // Create new user
-      const newUser = await sql`
-        INSERT INTO users (
-          email, 
-          name, 
-          email_verified, 
-          oauth_provider, 
-          oauth_provider_id,
-          created_at,
-          updated_at
-        )
-        VALUES (
-          ${googleUser.email},
-          ${googleUser.name},
-          true,
-          'google',
-          ${googleUser.id},
-          NOW(),
-          NOW()
-        )
-        RETURNING id, email, name, email_verified
-      `
-
-      user = newUser[0]
-    } else {
-      user = result[0]
-    }
-
-    // Create session
-    const token = await createSession({
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      emailVerified: true,
-    })
-
-    await setSessionCookie(token)
-
-    return { success: true }
-  } catch (error) {
-    console.error("[v0] Google sign in error:", error)
-    return { error: "Failed to sign in with Google" }
-  }
-}
-
-export async function signOut() {
-  await clearSessionCookie()
-  redirect("/")
 }
 
 export async function requestPasswordReset(email: string) {
@@ -554,4 +478,9 @@ async function mergeGuestCartToUser(userId: string) {
     console.error("[v0] Error merging guest cart:", error)
     // Don't throw - cart merging shouldn't block auth
   }
+}
+
+export async function signOut() {
+  await clearSessionCookie()
+  redirect("/")
 }
