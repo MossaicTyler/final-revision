@@ -522,5 +522,3 @@ export async function signOut() {
   await clearSessionCookie()
   redirect("/")
 }
-
-}
