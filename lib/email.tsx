@@ -6,13 +6,16 @@ const getEmailHeaders = () => ({
   "List-Unsubscribe": "{{{RESEND_UNSUBSCRIBE_URL}}}",
   "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
   "X-Entity-Ref-ID": `reknur-${Date.now()}`,
+  "X-Mailer": "reknur",
+  "X-Priority": "3",
+  "Importance": "Normal",
 })
 
 const createPreheader = (text: string) => `
   <div style="display:none;overflow:hidden;line-height:1px;opacity:0;max-height:0;max-width:0" data-skip-in-text="true">
     ${text}
     <div>
-       ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿
+       ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿
     </div>
   </div>
 `
@@ -27,12 +30,12 @@ export async function sendVerificationEmail(email: string, token: string) {
     const fromEmail = process.env.RESEND_FROM_EMAIL || "verify@notifiers.reknur.com"
     const from = `reknur <${fromEmail}>`
 
-    const plainText = `Verify Your Email Address\n\nThank you for signing up! Please visit the link below to verify your email address and activate your account:\n\n${verificationUrl}\n\nThis link will expire in 24 hours.`
+    const plainText = `Welcome to reknur!\n\nThank you for creating your account. To get started, please confirm your email address by clicking the link below:\n\n${verificationUrl}\n\nThis confirmation link is valid for 24 hours.\n\nIf you did not create an account with reknur, please disregard this message.\n\nBest regards,\nThe reknur Team\n\n---\nreknur - Curated Excellence\n${baseUrl}`
 
     const { data, error } = await resend.emails.send({
       from: from,
       to: email,
-      subject: "Verify your email address",
+      subject: "Confirm your reknur account",
       headers: getEmailHeaders(),
       text: plainText,
       html: `
@@ -41,10 +44,12 @@ export async function sendVerificationEmail(email: string, token: string) {
           <head>
             <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
             <meta name="x-apple-disable-message-reformatting" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <title>Confirm your reknur account</title>
           </head>
-          ${createPreheader("Verify your email address for reknur")}
-          <body style="background-color:rgb(255,255,255)">
-            <table border="0" width="100%" cellpadding="0" cellspacing="0" role="presentation" align="center">
+          ${createPreheader("Confirm your email address for reknur")}
+          <body style="background-color:rgb(255,255,255);margin:0;padding:0">
+            <table border="0" width="100%" cellpadding="0" cellspacing="0" role="presentation" align="center" style="background-color:rgb(255,255,255)">
               <tbody>
                 <tr>
                   <td style='background-color:rgb(255,255,255);font-family:ui-sans-serif,system-ui,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji"'>
@@ -63,13 +68,13 @@ export async function sendVerificationEmail(email: string, token: string) {
                                       Curated Excellence
                                     </p>
                                     <h1 style="margin-bottom:1rem;margin-top:1rem;font-weight:500;font-size:1.875rem;line-height:1.2;color:rgb(26,26,26)">
-                                      Verify Your Email Address
+                                      Welcome to reknur
                                     </h1>
                                     <p style="font-size:1rem;line-height:1.75rem;margin-bottom:2rem;margin-top:1rem;color:rgb(102,102,102)">
-                                      Thank you for signing up! Please click the button below to verify your email address and activate your account.
+                                      Thank you for creating your account. To get started, please confirm your email address by clicking the button below.
                                     </p>
-                                    <a href="${verificationUrl}" style="color:rgb(255,255,255);text-decoration-line:none;display:inline-flex;align-items:center;border-radius:0.375rem;background-color:rgb(26,26,26);padding-right:2.5rem;padding-left:2.5rem;padding-bottom:0.875rem;padding-top:0.875rem;text-align:center;font-weight:600;font-size:1rem;line-height:1.5" target="_blank">
-                                      Verify Email Address
+                                    <a href="${verificationUrl}" style="color:rgb(255,255,255);text-decoration-line:none;display:inline-block;align-items:center;border-radius:0.375rem;background-color:rgb(26,26,26);padding-right:2.5rem;padding-left:2.5rem;padding-bottom:0.875rem;padding-top:0.875rem;text-align:center;font-weight:600;font-size:1rem;line-height:1.5" target="_blank">
+                                      Confirm Email Address
                                     </a>
                                   </td>
                                 </tr>
@@ -79,8 +84,14 @@ export async function sendVerificationEmail(email: string, token: string) {
                               <tbody>
                                 <tr>
                                   <td>
-                                    <p style="font-size:0.875rem;line-height:1.4285714285714286;color:rgb(153,153,153);margin-top:0px;margin-bottom:0px">
-                                      This link will expire in 24 hours. If you didn't create an account, you can safely ignore this email.
+                                    <p style="font-size:0.875rem;line-height:1.4285714285714286;color:rgb(102,102,102);margin-top:0px;margin-bottom:1rem">
+                                      This confirmation link is valid for 24 hours.
+                                    </p>
+                                    <p style="font-size:0.875rem;line-height:1.4285714285714286;color:rgb(153,153,153);margin-top:0px;margin-bottom:0.5rem">
+                                      If you did not create an account with reknur, please disregard this message.
+                                    </p>
+                                    <p style="font-size:0.75rem;line-height:1.3333333333333333;color:rgb(156,163,175);margin-top:1rem;margin-bottom:0px">
+                                      reknur - ${baseUrl}
                                     </p>
                                   </td>
                                 </tr>
@@ -417,7 +428,7 @@ export async function sendOrderStatusUpdateEmail(
                                     <p style="font-size:1.125rem;line-height:1.5555555555555556;margin-bottom:2rem;margin-top:1rem;font-weight:500;color:rgb(26,26,26)">
                                       Hi ${orderDetails.customerName},
                                     </p>
-                                    <p style="font-size:1rem;line-height:1.75rem;color:rgb(102,102,102);margin-top:0px;margin-bottom:2rem">
+                                    <p style="font-size:1rem;line-height:1.75rem;color:rgb(102,102,102);margin-top:0px;margin-bottom:0rem">
                                       ${statusInfo.message}
                                     </p>
                                     ${trackingHtml}

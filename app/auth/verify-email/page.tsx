@@ -12,18 +12,22 @@ export default async function VerifyEmailPage({
 }) {
   const { token, success, error } = searchParams
 
+  // This prevents reprocessing after redirect
   if (token && !success && !error) {
-    console.log("[v0] Page received token, processing verification...")
+    console.log("[v0] Processing verification token...")
     const result = await verifyEmail(token)
     
     if (result.success) {
-      console.log("[v0] Verification successful, redirecting...")
+      console.log("[v0] Verification successful, redirecting to success page...")
       redirect("/auth/verify-email?success=true")
     } else {
-      console.log("[v0] Verification failed, redirecting with error...")
-      const errorCode = result.error?.includes("expired") ? "expired" :
-                       result.error?.includes("already verified") ? "already-verified" :
-                       result.error?.includes("Invalid") ? "invalid-token" : "unexpected"
+      console.log("[v0] Verification failed:", result.error)
+      const errorCode = result.code || (
+        result.error?.includes("expired") ? "expired" :
+        result.error?.includes("already") ? "already-verified" :
+        result.error?.includes("used") ? "token-used" :
+        result.error?.includes("Invalid") ? "invalid-token" : "unexpected"
+      )
       redirect(`/auth/verify-email?error=${errorCode}`)
     }
   }
@@ -49,7 +53,7 @@ export default async function VerifyEmailPage({
             <Button asChild className="w-full bg-green-600 hover:bg-green-700">
               <Link href="/?signin=true">Sign In Now</Link>
             </Button>
-            <Button asChild variant="outline" className="w-full bg-transparent">
+            <Button asChild variant="outline" className="w-full">
               <Link href="/account">Go to My Account</Link>
             </Button>
             <Button asChild variant="ghost" className="w-full">
@@ -63,19 +67,25 @@ export default async function VerifyEmailPage({
 
   let errorMessage = "An unexpected error occurred during verification."
   let errorTitle = "Verification Unsuccessful"
+  let showResendButton = true
 
   if (error === "no-token") {
     errorTitle = "Invalid Verification Link"
     errorMessage = "No verification token was provided. Please check your email and click the verification link."
   } else if (error === "invalid-token") {
-    errorTitle = "Verification Unsuccessful"
-    errorMessage = "This verification link is invalid or has already been used. Please request a new verification email."
+    errorTitle = "Invalid Link"
+    errorMessage = "This verification link is invalid. Please request a new verification email."
+  } else if (error === "token-used") {
+    errorTitle = "Link Already Used"
+    errorMessage = "This verification link has already been used successfully. You can sign in to your account now."
+    showResendButton = false
   } else if (error === "expired") {
     errorTitle = "Verification Expired"
-    errorMessage = "This verification link has expired. Please request a new verification email from your account settings."
+    errorMessage = "This verification link has expired. Verification links are valid for 24 hours. Please request a new one."
   } else if (error === "already-verified") {
     errorTitle = "Already Verified"
     errorMessage = "Your email is already verified. You can sign in to your account."
+    showResendButton = false
   }
 
   return (
@@ -93,21 +103,21 @@ export default async function VerifyEmailPage({
           <CardDescription className="text-center text-base">{errorMessage}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
-          {error === "already-verified" ? (
+          {showResendButton ? (
             <>
               <Button asChild className="w-full">
-                <Link href="/?signin=true">Sign In</Link>
+                <Link href="/account/settings">Request New Verification Email</Link>
               </Button>
-              <Button asChild variant="outline" className="w-full bg-transparent">
+              <Button asChild variant="outline" className="w-full">
                 <Link href="/">Return Home</Link>
               </Button>
             </>
           ) : (
             <>
               <Button asChild className="w-full">
-                <Link href="/account?resend=true">Request New Verification Email</Link>
+                <Link href="/?signin=true">Sign In</Link>
               </Button>
-              <Button asChild variant="outline" className="w-full bg-transparent">
+              <Button asChild variant="outline" className="w-full">
                 <Link href="/">Return Home</Link>
               </Button>
             </>
