@@ -254,7 +254,14 @@ export async function resendVerificationEmail(email: string) {
 
 export async function verifyEmail(token: string) {
   try {
+    console.log("[v0] ===== VERIFICATION START =====")
     console.log("[v0] Attempting to verify email with token:", token.substring(0, 20) + "...")
+    console.log("[v0] Token length:", token.length)
+
+    if (!token || token.length < 10) {
+      console.log("[v0] Invalid token format")
+      return { error: "Invalid verification link format" }
+    }
 
     const result = await sql`
       SELECT id, email, name, verification_token, verification_token_expires, email_verified
@@ -262,41 +269,52 @@ export async function verifyEmail(token: string) {
       WHERE verification_token = ${token}
     `
 
-    console.log("[v0] Database query result:", result.length > 0 ? "User found" : "No user found")
+    console.log("[v0] Database query completed. Rows found:", result.length)
 
     if (result.length === 0) {
       console.log("[v0] No user found with this verification token")
-      return { error: "Invalid or expired verification link" }
+      console.log("[v0] This could mean:")
+      console.log("[v0] - Token was already used and cleared")
+      console.log("[v0] - Token doesn't exist in database")
+      console.log("[v0] - Token has been replaced by a newer one")
+      return { error: "Invalid or expired verification link. Please request a new one." }
     }
 
     const user = result[0]
 
     console.log("[v0] User found:", {
+      userId: user.id,
       email: user.email,
       emailVerified: user.email_verified,
+      hasToken: !!user.verification_token,
       tokenExpires: user.verification_token_expires,
     })
 
     // This handles the case where user clicks the link multiple times
     if (user.email_verified) {
-      console.log("[v0] User email already verified, but allowing sign-in")
+      console.log("[v0] User email already verified, creating session and allowing sign-in")
       
-      await mergeGuestCartToUser(user.id)
+      try {
+        await mergeGuestCartToUser(user.id)
 
-      // Create session for already-verified user
-      const sessionToken = await createSession({
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        emailVerified: true,
-      })
+        // Create session for already-verified user
+        const sessionToken = await createSession({
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          emailVerified: true,
+        })
 
-      await setSessionCookie(sessionToken)
+        await setSessionCookie(sessionToken)
 
-      console.log("[v0] Session created for already-verified user")
-      
-      // Return success instead of error
-      return { success: true, alreadyVerified: true }
+        console.log("[v0] Session created for already-verified user")
+        console.log("[v0] ===== VERIFICATION END (already verified) =====")
+        
+        return { success: true, alreadyVerified: true }
+      } catch (sessionError) {
+        console.error("[v0] Error creating session for verified user:", sessionError)
+        return { error: "Email already verified. Please try signing in manually." }
+      }
     }
 
     // Check if token expired
@@ -307,45 +325,62 @@ export async function verifyEmail(token: string) {
       expiresAt: expiresAt.toISOString(),
       now: now.toISOString(),
       expired: expiresAt < now,
+      hoursRemaining: ((expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60)).toFixed(2),
     })
 
     if (expiresAt < now) {
       console.log("[v0] Verification token has expired")
-      return { error: "Verification link has expired. Please request a new one." }
+      return { error: "Verification link has expired. Please request a new one from your account page." }
     }
 
     // Mark email as verified
-    console.log("[v0] Marking email as verified for user:", user.email)
+    console.log("[v0] Token is valid. Marking email as verified for user:", user.email)
 
-    await sql`
-      UPDATE users
-      SET email_verified = true,
-          verification_token = NULL,
-          verification_token_expires = NULL,
-          updated_at = NOW()
-      WHERE id = ${user.id}
-    `
+    try {
+      await sql`
+        UPDATE users
+        SET email_verified = true,
+            verification_token = NULL,
+            verification_token_expires = NULL,
+            updated_at = NOW()
+        WHERE id = ${user.id}
+      `
+      console.log("[v0] Database update successful. Email marked as verified.")
+    } catch (dbError) {
+      console.error("[v0] Database update failed:", dbError)
+      return { error: "Failed to update verification status. Please try again or contact support." }
+    }
 
     console.log("[v0] Email verified successfully. Creating session...")
 
-    await mergeGuestCartToUser(user.id)
+    try {
+      await mergeGuestCartToUser(user.id)
 
-    // Create session
-    const sessionToken = await createSession({
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      emailVerified: true,
-    })
+      const sessionToken = await createSession({
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        emailVerified: true,
+      })
 
-    await setSessionCookie(sessionToken)
+      await setSessionCookie(sessionToken)
 
-    console.log("[v0] Session created successfully")
+      console.log("[v0] Session created successfully")
+      console.log("[v0] ===== VERIFICATION END (success) =====")
+    } catch (sessionError) {
+      console.error("[v0] Session creation failed:", sessionError)
+      return { error: "Email verified but failed to sign you in. Please try signing in manually." }
+    }
 
     return { success: true }
   } catch (error) {
+    console.error("[v0] ===== VERIFICATION ERROR =====")
     console.error("[v0] Email verification error:", error)
-    return { error: "Failed to verify email" }
+    console.error("[v0] Error type:", error instanceof Error ? error.constructor.name : typeof error)
+    console.error("[v0] Error message:", error instanceof Error ? error.message : String(error))
+    console.error("[v0] Error stack:", error instanceof Error ? error.stack : "No stack trace")
+    console.error("[v0] ===== VERIFICATION ERROR END =====")
+    return { error: "An unexpected error occurred during verification. Please try again or contact support." }
   }
 }
 
