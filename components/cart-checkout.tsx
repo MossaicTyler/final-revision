@@ -17,7 +17,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useRegion } from "@/contexts/region-context"
 import { formatPrice as formatRegionalPrice } from "@/lib/regions"
 
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
+const stripePromise = loadStripe(process.env.STRIPE_PUBLISHABLE_KEY!)
 
 function setCookie(name: string, value: string, days = 30) {
   const expires = new Date()
