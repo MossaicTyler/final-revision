@@ -34,32 +34,6 @@ export default function VerifyEmailPage({ searchParams }: { searchParams: { succ
     )
   }
 
-  if (success === "already-verified") {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-muted/30">
-        <Card className="max-w-md w-full">
-          <CardHeader>
-            <div className="flex justify-center mb-4">
-              <AlertCircle className="h-12 w-12 text-blue-600" />
-            </div>
-            <CardTitle className="text-center font-serif text-2xl">Already Verified</CardTitle>
-            <CardDescription className="text-center">
-              Your email was already verified. You're now signed in and can access your account.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Button asChild className="w-full">
-              <Link href="/account">Go to My Account</Link>
-            </Button>
-            <Button asChild variant="outline" className="w-full bg-transparent">
-              <Link href="/">Continue Shopping</Link>
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    )
-  }
-
   // Error states
   let errorMessage = "An unexpected error occurred during verification."
   let errorTitle = "Verification Failed"
@@ -73,9 +47,9 @@ export default function VerifyEmailPage({ searchParams }: { searchParams: { succ
   } else if (error === "expired") {
     errorTitle = "Link Expired"
     errorMessage = "This verification link has expired. Please request a new verification email from your account page."
-  } else if (error === "session-failed") {
+  } else if (error === "already-verified") {
     errorTitle = "Already Verified"
-    errorMessage = "Your email is already verified. Please try signing in manually."
+    errorMessage = "Your email is already verified. You can sign in to your account."
   } else if (error === "unexpected") {
     errorTitle = "Verification Failed"
     errorMessage = "An unexpected error occurred. Please try again or contact support if the problem persists."
@@ -94,6 +68,9 @@ export default function VerifyEmailPage({ searchParams }: { searchParams: { succ
         <CardContent className="space-y-4">
           <Button asChild className="w-full">
             <Link href="/">Return Home</Link>
+          </Button>
+          <Button asChild variant="outline" className="w-full bg-transparent">
+            <Link href="/account">Try Signing In</Link>
           </Button>
         </CardContent>
       </Card>
