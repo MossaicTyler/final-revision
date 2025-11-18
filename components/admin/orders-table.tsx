@@ -4,13 +4,14 @@ import { useState } from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Search, ExternalLink, Package, Truck, CheckCircle, Clock, XCircle } from "lucide-react"
+import { Search, ExternalLink, Package, Truck, CheckCircle, Clock, XCircle, AlertCircle } from 'lucide-react'
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter } from 'next/navigation'
 
 const statusConfig = {
   pending: { icon: Clock, color: "text-yellow-600 dark:text-yellow-400", bg: "bg-yellow-500/10 border-yellow-500/20" },
   processing: { icon: Package, color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-500/10 border-blue-500/20" },
+  delayed: { icon: AlertCircle, color: "text-orange-600 dark:text-orange-400", bg: "bg-orange-500/10 border-orange-500/20" },
   shipped: { icon: Truck, color: "text-purple-600 dark:text-purple-400", bg: "bg-purple-500/10 border-purple-500/20" },
   delivered: {
     icon: CheckCircle,
@@ -54,6 +55,7 @@ export function AdminOrdersTable({ orders }: { orders: any[] }) {
           <option value="all">All Status</option>
           <option value="pending">Pending</option>
           <option value="processing">Processing</option>
+          <option value="delayed">Delayed</option>
           <option value="shipped">Shipped</option>
           <option value="delivered">Delivered</option>
           <option value="cancelled">Cancelled</option>

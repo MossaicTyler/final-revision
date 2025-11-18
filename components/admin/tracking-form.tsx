@@ -9,8 +9,8 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { updateOrderTracking } from "@/app/actions/admin"
-import { useRouter } from "next/navigation"
-import { Loader2, CheckCircle } from "lucide-react"
+import { useRouter } from 'next/navigation'
+import { Loader2, CheckCircle } from 'lucide-react'
 
 export function TrackingForm({ order }: { order: any }) {
   const router = useRouter()
@@ -58,6 +58,7 @@ export function TrackingForm({ order }: { order: any }) {
             >
               <option value="pending">Pending</option>
               <option value="processing">Processing</option>
+              <option value="delayed">Delayed</option>
               <option value="shipped">Shipped</option>
               <option value="delivered">Delivered</option>
               <option value="cancelled">Cancelled</option>
@@ -105,16 +106,19 @@ export function TrackingForm({ order }: { order: any }) {
 
           <div className="space-y-2">
             <Label htmlFor="notes" className="text-xs uppercase tracking-wider text-muted-foreground">
-              Notes
+              Additional Notes
             </Label>
             <Textarea
               id="notes"
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              placeholder="Additional notes..."
+              placeholder="Add notes about delays, special handling, or other order updates..."
               rows={3}
               className="bg-background/50 border-border/40 resize-none"
             />
+            <p className="text-xs text-muted-foreground">
+              These notes will be visible to customers when they check their order status.
+            </p>
           </div>
 
           <Button type="submit" className="w-full" disabled={loading}>

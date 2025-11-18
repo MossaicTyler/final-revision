@@ -3,7 +3,7 @@
 import { sql } from "@/lib/db"
 import { getCurrentUser } from "@/lib/auth"
 import { redirect } from 'next/navigation'
-import { sendOrderStatusUpdateEmail } from "@/lib/email"
+import { sendOrderStatusUpdateEmail, sendShippingNotificationEmail } from "@/lib/email"
 import { decryptData } from "@/lib/auth"
 
 export async function getUserOrders() {
@@ -184,6 +184,26 @@ export async function updateOrderStatus(orderId: number, newStatus: string, note
 
     if (customerEmail && oldStatus !== newStatus) {
       console.log("[v0] Sending order status update email for order:", orderId)
+      
+      // Send shipping-specific email for shipped/delivered status
+      if (newStatus === "shipped" || newStatus === "delivered") {
+        const shippingEmailResult = await sendShippingNotificationEmail(customerEmail, orderId, {
+          customerName: customerName || "Customer",
+          status: newStatus,
+          trackingNumber: trackingNumber || undefined,
+          carrier: carrier || undefined,
+          estimatedDelivery: estimatedDelivery || undefined,
+          notes: notes || undefined,
+        })
+        
+        if (!shippingEmailResult.success) {
+          console.error("[v0] Failed to send shipping notification email:", shippingEmailResult.error)
+        } else {
+          console.log("[v0] Shipping notification email sent successfully")
+        }
+      }
+      
+      // Always send general status update email
       const emailResult = await sendOrderStatusUpdateEmail(customerEmail, orderId, {
         customerName: customerName || "Customer",
         oldStatus,
@@ -191,6 +211,7 @@ export async function updateOrderStatus(orderId: number, newStatus: string, note
         trackingNumber: trackingNumber || undefined,
         carrier: carrier || undefined,
         estimatedDelivery: estimatedDelivery || undefined,
+        notes: notes || undefined,
       })
 
       if (!emailResult.success) {
