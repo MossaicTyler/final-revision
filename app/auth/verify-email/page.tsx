@@ -1,13 +1,34 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { CheckCircle2, XCircle, AlertCircle } from 'lucide-react'
+import { CheckCircle2, XCircle } from 'lucide-react'
 import Link from "next/link"
+import { verifyEmail } from "@/app/actions/auth"
+import { redirect } from 'next/navigation'
 
-export default function VerifyEmailPage({ searchParams }: { searchParams: { success?: string; error?: string } }) {
-  const success = searchParams.success
-  const error = searchParams.error
+export default async function VerifyEmailPage({ 
+  searchParams 
+}: { 
+  searchParams: { token?: string; success?: string; error?: string } 
+}) {
+  const { token, success, error } = searchParams
 
-  // Success states
+  if (token && !success && !error) {
+    console.log("[v0] Page received token, processing verification...")
+    const result = await verifyEmail(token)
+    
+    if (result.success) {
+      console.log("[v0] Verification successful, redirecting...")
+      redirect("/auth/verify-email?success=true")
+    } else {
+      console.log("[v0] Verification failed, redirecting with error...")
+      const errorCode = result.error?.includes("expired") ? "expired" :
+                       result.error?.includes("already verified") ? "already-verified" :
+                       result.error?.includes("Invalid") ? "invalid-token" : "unexpected"
+      redirect(`/auth/verify-email?error=${errorCode}`)
+    }
+  }
+
+  // Success state
   if (success === "true") {
     return (
       <div className="min-h-screen flex items-center justify-center p-4 bg-muted/30">
@@ -34,7 +55,6 @@ export default function VerifyEmailPage({ searchParams }: { searchParams: { succ
     )
   }
 
-  // Error states
   let errorMessage = "An unexpected error occurred during verification."
   let errorTitle = "Verification Failed"
 
@@ -50,9 +70,6 @@ export default function VerifyEmailPage({ searchParams }: { searchParams: { succ
   } else if (error === "already-verified") {
     errorTitle = "Already Verified"
     errorMessage = "Your email is already verified. You can sign in to your account."
-  } else if (error === "unexpected") {
-    errorTitle = "Verification Failed"
-    errorMessage = "An unexpected error occurred. Please try again or contact support if the problem persists."
   }
 
   return (
