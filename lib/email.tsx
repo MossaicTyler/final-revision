@@ -16,10 +16,12 @@ const createPreheader = (text: string) => `
 
 export async function sendVerificationEmail(email: string, token: string) {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://www.reknur.com"
     const verificationUrl = `${baseUrl}/auth/verify-email?token=${token}`
 
-    const fromEmail = process.env.RESEND_FROM_EMAIL || "orders@notifiers.reknur.com"
+    console.log("[v0] Sending verification email with URL:", verificationUrl.substring(0, 60) + "...")
+
+    const fromEmail = process.env.RESEND_FROM_EMAIL || "verify@notifiers.reknur.com"
     const from = `reknur <${fromEmail}>`
 
     const plainText = `Verify Your Email Address\n\nThank you for signing up! Please visit the link below to verify your email address and activate your account:\n\n${verificationUrl}\n\nThis link will expire in 24 hours.`
@@ -39,7 +41,7 @@ export async function sendVerificationEmail(email: string, token: string) {
             <title>Verify Your Email</title>
           </head>
           <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
-            ${createPreheader("Verify your email address for reknur")}
+            ${createPreheader("Verify your email address for REKNUR")}
             <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
               <tr>
                 <td align="center">
@@ -82,11 +84,14 @@ export async function sendVerificationEmail(email: string, token: string) {
     })
 
     if (error) {
+      console.error("[v0] Resend API error:", error)
       return { success: false, error: error.message }
     }
 
+    console.log("[v0] Email sent successfully via Resend, message ID:", data?.id)
     return { success: true, messageId: data?.id }
   } catch (error) {
+    console.error("[v0] Email sending exception:", error)
     return { success: false, error: error instanceof Error ? error.message : "Unknown error" }
   }
 }
@@ -332,7 +337,7 @@ export async function sendPasswordResetEmail(email: string, token: string) {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
     const resetUrl = `${baseUrl}/auth/reset-password?token=${token}`
-    const fromEmail = process.env.RESEND_FROM_EMAIL || "orders@notifiers.reknur.com"
+    const fromEmail = process.env.RESEND_FROM_EMAIL || "reset@notifiers.reknur.com"
     const from = `reknur <${fromEmail}>`
 
     const plainText = `Reset Your Password\n\nWe received a request to reset your password. Visit this link:\n\n${resetUrl}\n\nThis link will expire in 1 hour.`

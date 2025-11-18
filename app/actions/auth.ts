@@ -141,6 +141,8 @@ export async function signIn(formData: FormData) {
 
 export async function resendVerificationEmail(email: string) {
   try {
+    console.log("[v0] Resend verification requested for:", email)
+    
     const result = await sql`
       SELECT id, email, email_verified, verification_token
       FROM users
@@ -148,12 +150,15 @@ export async function resendVerificationEmail(email: string) {
     `
 
     if (result.length === 0) {
+      console.log("[v0] Email not found in database:", email)
       return { error: "Email not found" }
     }
 
     const user = result[0]
+    console.log("[v0] User found, email_verified status:", user.email_verified)
 
     if (user.email_verified) {
+      console.log("[v0] Email already verified, cannot resend")
       return { error: "Email already verified" }
     }
 
@@ -176,9 +181,20 @@ export async function resendVerificationEmail(email: string) {
       const timeSinceLastAttempt = now.getTime() - lastAttempt.getTime()
       const minutesSinceLastAttempt = Math.floor(timeSinceLastAttempt / 1000 / 60)
 
+      console.log("[v0] Rate limit check:", {
+        attempt_count,
+        minutesSinceLastAttempt,
+      })
+
       if (attempt_count >= 3) {
         return {
           error: "Too many verification emails sent. Please try again in 24 hours or contact support.",
+        }
+      }
+
+      if (minutesSinceLastAttempt < 2) {
+        return {
+          error: `Please wait ${2 - minutesSinceLastAttempt} minute(s) before requesting another verification email.`,
         }
       }
 
@@ -199,11 +215,12 @@ export async function resendVerificationEmail(email: string) {
       `
     }
 
-    // Generate new token
     const verificationToken = generateVerificationToken()
     const tokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000)
 
-    console.log("[v0] Generating new verification token for:", email)
+    console.log("[v0] Generating NEW verification token for:", email)
+    console.log("[v0] New token (first 20 chars):", verificationToken.substring(0, 20) + "...")
+    console.log("[v0] Token expires at:", tokenExpires.toISOString())
 
     await sql`
       UPDATE users
@@ -213,17 +230,22 @@ export async function resendVerificationEmail(email: string) {
       WHERE id = ${user.id}
     `
 
-    console.log("[v0] Resending verification email to:", email)
+    console.log("[v0] Database updated with new verification token")
+    console.log("[v0] Sending verification email to:", email)
+    
     const emailResult = await sendVerificationEmail(email, verificationToken)
 
     if (!emailResult.success) {
-      console.error("[v0] Failed to resend verification email:", emailResult.error)
+      console.error("[v0] Failed to send verification email:", emailResult.error)
       return { error: `Failed to send email: ${emailResult.error}` }
     }
 
-    console.log("[v0] Verification email resent successfully")
+    console.log("[v0] Verification email sent successfully with message ID:", emailResult.messageId)
 
-    return { success: true, message: "Verification email sent! Please check your inbox." }
+    return { 
+      success: true, 
+      message: "A new verification email has been sent! Please check your inbox and spam folder." 
+    }
   } catch (error) {
     console.error("[v0] Resend verification error:", error)
     return { error: "Failed to resend verification email" }
@@ -255,10 +277,26 @@ export async function verifyEmail(token: string) {
       tokenExpires: user.verification_token_expires,
     })
 
-    // Check if already verified
+    // This handles the case where user clicks the link multiple times
     if (user.email_verified) {
-      console.log("[v0] User email already verified")
-      return { error: "Email already verified. You can sign in now." }
+      console.log("[v0] User email already verified, but allowing sign-in")
+      
+      await mergeGuestCartToUser(user.id)
+
+      // Create session for already-verified user
+      const sessionToken = await createSession({
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        emailVerified: true,
+      })
+
+      await setSessionCookie(sessionToken)
+
+      console.log("[v0] Session created for already-verified user")
+      
+      // Return success instead of error
+      return { success: true, alreadyVerified: true }
     }
 
     // Check if token expired
@@ -483,4 +521,6 @@ async function mergeGuestCartToUser(userId: string) {
 export async function signOut() {
   await clearSessionCookie()
   redirect("/")
+}
+
 }

@@ -1,7 +1,7 @@
 import { verifyEmail } from "@/app/actions/auth"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { CheckCircle2, XCircle } from "lucide-react"
+import { CheckCircle2, XCircle } from 'lucide-react'
 import Link from "next/link"
 
 export default async function VerifyEmailPage({ searchParams }: { searchParams: { token?: string } }) {
@@ -11,19 +11,21 @@ export default async function VerifyEmailPage({ searchParams }: { searchParams: 
     return (
       <div className="min-h-screen flex items-center justify-center p-4 bg-muted/30">
         <Card className="max-w-md w-full">
-          <CardHeader>
-            <div className="flex justify-center mb-4">
-              <XCircle className="h-12 w-12 text-destructive" />
-            </div>
-            <CardTitle className="text-center font-serif text-2xl">Invalid Link</CardTitle>
-            <CardDescription className="text-center">This verification link is invalid or has expired.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Button asChild className="w-full">
-              <Link href="/">Return Home</Link>
-            </Button>
-          </CardContent>
-        </Card>
+        <CardHeader>
+          <div className="flex justify-center mb-4">
+            <XCircle className="h-12 w-12 text-destructive" />
+          </div>
+          <CardTitle className="text-center font-serif text-2xl">Invalid Link</CardTitle>
+          <CardDescription className="text-center">
+            No verification token was provided. Please check your email and click the verification link.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Button asChild className="w-full">
+            <Link href="/">Return Home</Link>
+          </Button>
+        </CardContent>
+      </Card>
       </div>
     )
   }
