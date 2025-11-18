@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { CheckCircle2, XCircle } from 'lucide-react'
+import { CheckCircle2, XCircle, AlertCircle } from 'lucide-react'
 import Link from "next/link"
 import { verifyEmail } from "@/app/actions/auth"
 import { redirect } from 'next/navigation'
@@ -12,16 +12,12 @@ export default async function VerifyEmailPage({
 }) {
   const { token, success, error } = searchParams
 
-  // This prevents reprocessing after redirect
   if (token && !success && !error) {
-    console.log("[v0] Processing verification token...")
     const result = await verifyEmail(token)
     
     if (result.success) {
-      console.log("[v0] Verification successful, redirecting to success page...")
       redirect("/auth/verify-email?success=true")
     } else {
-      console.log("[v0] Verification failed:", result.error)
       const errorCode = result.code || (
         result.error?.includes("expired") ? "expired" :
         result.error?.includes("already") ? "already-verified" :
@@ -43,21 +39,18 @@ export default async function VerifyEmailPage({
               </div>
             </div>
             <CardTitle className="text-center font-serif text-2xl text-green-600 dark:text-green-500">
-              Verification Successful!
+              Email Verified!
             </CardTitle>
             <CardDescription className="text-center text-base">
-              Your email has been successfully verified. You can now sign in and access all features of your account.
+              Your email has been successfully verified. Welcome to reknur!
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <Button asChild className="w-full bg-green-600 hover:bg-green-700">
-              <Link href="/?signin=true">Sign In Now</Link>
+              <Link href="/?signin=true">Sign In to Your Account</Link>
             </Button>
             <Button asChild variant="outline" className="w-full">
-              <Link href="/account">Go to My Account</Link>
-            </Button>
-            <Button asChild variant="ghost" className="w-full">
-              <Link href="/">Continue Shopping</Link>
+              <Link href="/">Start Shopping</Link>
             </Button>
           </CardContent>
         </Card>
@@ -65,27 +58,37 @@ export default async function VerifyEmailPage({
     )
   }
 
+  const isAlreadyVerified = error === "token-used" || error === "already-verified"
+  
   let errorMessage = "An unexpected error occurred during verification."
-  let errorTitle = "Verification Unsuccessful"
+  let errorTitle = "Verification Issue"
+  let icon = XCircle
+  let iconColor = "text-red-600 dark:text-red-500"
+  let iconBg = "bg-red-100 dark:bg-red-900/20"
+  let titleColor = "text-red-600 dark:text-red-500"
   let showResendButton = true
 
   if (error === "no-token") {
-    errorTitle = "Invalid Verification Link"
-    errorMessage = "No verification token was provided. Please check your email and click the verification link."
+    errorTitle = "No Verification Token"
+    errorMessage = "The verification link appears to be incomplete. Please check your email and use the full link provided."
   } else if (error === "invalid-token") {
-    errorTitle = "Invalid Link"
-    errorMessage = "This verification link is invalid. Please request a new verification email."
-  } else if (error === "token-used") {
-    errorTitle = "Link Already Used"
-    errorMessage = "This verification link has already been used successfully. You can sign in to your account now."
+    errorTitle = "Invalid Verification Link"
+    errorMessage = "This verification link is not valid. Please request a new verification email from your account settings."
+  } else if (error === "token-used" || error === "already-verified") {
+    icon = CheckCircle2
+    iconColor = "text-blue-600 dark:text-blue-500"
+    iconBg = "bg-blue-100 dark:bg-blue-900/20"
+    titleColor = "text-blue-600 dark:text-blue-500"
+    errorTitle = "Already Verified"
+    errorMessage = "Good news! Your email is already verified. You're all set to sign in and start shopping."
     showResendButton = false
   } else if (error === "expired") {
-    errorTitle = "Verification Expired"
-    errorMessage = "This verification link has expired. Verification links are valid for 24 hours. Please request a new one."
-  } else if (error === "already-verified") {
-    errorTitle = "Already Verified"
-    errorMessage = "Your email is already verified. You can sign in to your account."
-    showResendButton = false
+    icon = AlertCircle
+    iconColor = "text-orange-600 dark:text-orange-500"
+    iconBg = "bg-orange-100 dark:bg-orange-900/20"
+    titleColor = "text-orange-600 dark:text-orange-500"
+    errorTitle = "Link Expired"
+    errorMessage = "This verification link has expired. Verification links are valid for 24 hours. Please request a new one from your account settings."
   }
 
   return (
@@ -93,11 +96,13 @@ export default async function VerifyEmailPage({
       <Card className="max-w-md w-full">
         <CardHeader>
           <div className="flex justify-center mb-4">
-            <div className="rounded-full bg-red-100 dark:bg-red-900/20 p-3">
-              <XCircle className="h-16 w-16 text-red-600 dark:text-red-500" />
+            <div className={`rounded-full ${iconBg} p-3`}>
+              {icon === CheckCircle2 && <CheckCircle2 className={`h-16 w-16 ${iconColor}`} />}
+              {icon === XCircle && <XCircle className={`h-16 w-16 ${iconColor}`} />}
+              {icon === AlertCircle && <AlertCircle className={`h-16 w-16 ${iconColor}`} />}
             </div>
           </div>
-          <CardTitle className="text-center font-serif text-2xl text-red-600 dark:text-red-500">
+          <CardTitle className={`text-center font-serif text-2xl ${titleColor}`}>
             {errorTitle}
           </CardTitle>
           <CardDescription className="text-center text-base">{errorMessage}</CardDescription>
@@ -118,7 +123,7 @@ export default async function VerifyEmailPage({
                 <Link href="/?signin=true">Sign In</Link>
               </Button>
               <Button asChild variant="outline" className="w-full">
-                <Link href="/">Return Home</Link>
+                <Link href="/">Browse Products</Link>
               </Button>
             </>
           )}

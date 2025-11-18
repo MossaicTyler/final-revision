@@ -15,10 +15,37 @@ const createPreheader = (text: string) => `
   <div style="display:none;overflow:hidden;line-height:1px;opacity:0;max-height:0;max-width:0" data-skip-in-text="true">
     ${text}
     <div>
-       ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿
+       ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿
     </div>
   </div>
 `
+
+const createUnsubscribeFooter = (email: string, includeUnsubscribe: boolean = true) => {
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://www.reknur.com"
+  const unsubscribeUrl = `${baseUrl}/unsubscribe?email=${encodeURIComponent(email)}`
+  
+  return `
+    <table align="center" width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" style="padding:1.5rem 2rem;text-align:center;border-top:1px solid rgb(229,231,235);background-color:rgb(249,250,251)">
+      <tbody>
+        <tr>
+          <td>
+            <p style="font-size:0.75rem;line-height:1.3333333333333333;color:rgb(107,114,128);margin:0 0 0.5rem 0">
+              Reknur - Curated Excellence
+            </p>
+            <p style="font-size:0.75rem;line-height:1.3333333333333333;color:rgb(156,163,175);margin:0">
+              ${baseUrl}
+            </p>
+            ${includeUnsubscribe ? `
+              <p style="font-size:0.75rem;line-height:1.3333333333333333;margin:1rem 0 0 0">
+                <a href="${unsubscribeUrl}" style="color:rgb(107,114,128);text-decoration:underline">Unsubscribe from marketing emails</a>
+              </p>
+            ` : ""}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  `
+}
 
 export async function sendVerificationEmail(email: string, token: string) {
   try {
@@ -27,15 +54,15 @@ export async function sendVerificationEmail(email: string, token: string) {
 
     console.log("[v0] Sending verification email with URL:", verificationUrl.substring(0, 60) + "...")
 
-    const fromEmail = process.env.RESEND_FROM_EMAIL || "verify@notifiers.reknur.com"
-    const from = `reknur <${fromEmail}>`
+    const fromEmail = process.env.RESEND_VERIFICATION_FROM_EMAIL || process.env.RESEND_FROM_EMAIL || "verify@notifiers.reknur.com"
+    const from = `Reknur <${fromEmail}>`
 
-    const plainText = `Welcome to reknur!\n\nThank you for creating your account. To get started, please confirm your email address by clicking the link below:\n\n${verificationUrl}\n\nThis confirmation link is valid for 24 hours.\n\nIf you did not create an account with reknur, please disregard this message.\n\nBest regards,\nThe reknur Team\n\n---\nreknur - Curated Excellence\n${baseUrl}`
+    const plainText = `Welcome to Reknur!\n\nThank you for creating your account. To get started, please confirm your email address by clicking the link below:\n\n${verificationUrl}\n\nThis confirmation link is valid for 24 hours.\n\nIf you did not create an account with Reknur, please disregard this message.\n\nBest regards,\nThe Reknur Team\n\n---\nReknur - Curated Excellence\n${baseUrl}`
 
     const { data, error } = await resend.emails.send({
       from: from,
       to: email,
-      subject: "Confirm your reknur account",
+      subject: "Confirm your Reknur account",
       headers: getEmailHeaders(),
       text: plainText,
       html: `
@@ -45,9 +72,9 @@ export async function sendVerificationEmail(email: string, token: string) {
             <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
             <meta name="x-apple-disable-message-reformatting" />
             <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-            <title>Confirm your reknur account</title>
+            <title>Confirm your Reknur account</title>
           </head>
-          ${createPreheader("Confirm your email address for reknur")}
+          ${createPreheader("Confirm your email address for Reknur")}
           <body style="background-color:rgb(255,255,255);margin:0;padding:0">
             <table border="0" width="100%" cellpadding="0" cellspacing="0" role="presentation" align="center" style="background-color:rgb(255,255,255)">
               <tbody>
@@ -62,13 +89,13 @@ export async function sendVerificationEmail(email: string, token: string) {
                                 <tr>
                                   <td>
                                     <p style="font-size:1.875rem;line-height:1.2;margin-right:0rem;margin-left:0rem;margin-top:1rem;margin-bottom:0.5rem;padding:0rem;text-align:center;font-weight:600;color:rgb(26,26,26);font-family:'Playfair Display',serif">
-                                      reknur
+                                      Reknur
                                     </p>
                                     <p style="font-size:0.75rem;line-height:1.3333333333333333;font-weight:400;text-transform:uppercase;letter-spacing:0.1em;margin-top:0px;margin-bottom:2rem;color:rgb(115,115,115)">
                                       Curated Excellence
                                     </p>
                                     <h1 style="margin-bottom:1rem;margin-top:1rem;font-weight:500;font-size:1.875rem;line-height:1.2;color:rgb(26,26,26)">
-                                      Welcome to reknur
+                                      Welcome to Reknur
                                     </h1>
                                     <p style="font-size:1rem;line-height:1.75rem;margin-bottom:2rem;margin-top:1rem;color:rgb(102,102,102)">
                                       Thank you for creating your account. To get started, please confirm your email address by clicking the button below.
@@ -88,15 +115,13 @@ export async function sendVerificationEmail(email: string, token: string) {
                                       This confirmation link is valid for 24 hours.
                                     </p>
                                     <p style="font-size:0.875rem;line-height:1.4285714285714286;color:rgb(153,153,153);margin-top:0px;margin-bottom:0.5rem">
-                                      If you did not create an account with reknur, please disregard this message.
-                                    </p>
-                                    <p style="font-size:0.75rem;line-height:1.3333333333333333;color:rgb(156,163,175);margin-top:1rem;margin-bottom:0px">
-                                      reknur - ${baseUrl}
+                                      If you did not create an account with Reknur, please disregard this message.
                                     </p>
                                   </td>
                                 </tr>
                               </tbody>
                             </table>
+                            ${createUnsubscribeFooter(email, false)}
                           </td>
                         </tr>
                       </tbody>
@@ -148,8 +173,8 @@ export async function sendOrderConfirmationEmail(
     const orderUrl = orderDetails.isGuest
       ? `${baseUrl}/track-order/${orderId}?email=${encodeURIComponent(email)}`
       : `${baseUrl}/account/orders/${orderId}`
-    const fromEmail = process.env.RESEND_FROM_EMAIL || "orders@notifiers.reknur.com"
-    const from = `reknur <${fromEmail}>`
+    const fromEmail = process.env.RESEND_ORDERS_FROM_EMAIL || process.env.RESEND_FROM_EMAIL || "orders@notifiers.reknur.com"
+    const from = `Reknur <${fromEmail}>`
 
     const formatPrice = (amount: number, currency: string) => {
       const formatted = (amount / 100).toFixed(2)
@@ -203,7 +228,7 @@ export async function sendOrderConfirmationEmail(
                                 <tr>
                                   <td>
                                     <p style="font-size:1.875rem;line-height:1.2;margin-right:0rem;margin-left:0rem;margin-top:1rem;margin-bottom:0.5rem;padding:0rem;text-align:center;font-weight:600;color:rgb(26,26,26);font-family:'Playfair Display',serif">
-                                      reknur
+                                      Reknur
                                     </p>
                                     <p style="font-size:0.75rem;line-height:1.3333333333333333;font-weight:400;text-transform:uppercase;letter-spacing:0.1em;margin-top:0px;margin-bottom:0.5rem;color:rgb(115,115,115)">
                                       Curated Excellence
@@ -271,6 +296,7 @@ export async function sendOrderConfirmationEmail(
                                 </tr>
                               </tbody>
                             </table>
+                            ${createUnsubscribeFooter(email)}
                           </td>
                         </tr>
                       </tbody>
@@ -310,8 +336,8 @@ export async function sendOrderStatusUpdateEmail(
   try {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
     const orderUrl = `${baseUrl}/account/orders/${orderId}`
-    const fromEmail = process.env.RESEND_FROM_EMAIL || "orders@notifiers.reknur.com"
-    const from = `reknur <${fromEmail}>`
+    const fromEmail = process.env.RESEND_ORDERS_FROM_EMAIL || process.env.RESEND_FROM_EMAIL || "orders@notifiers.reknur.com"
+    const from = `Reknur <${fromEmail}>`
 
     const statusMessages: Record<string, { title: string; message: string; color: string; bgColor: string }> = {
       processing: {
@@ -405,7 +431,7 @@ export async function sendOrderStatusUpdateEmail(
                                 <tr>
                                   <td>
                                     <p style="font-size:1.875rem;line-height:1.2;margin-right:0rem;margin-left:0rem;margin-top:1rem;margin-bottom:0.5rem;padding:0rem;text-align:center;font-weight:600;color:rgb(26,26,26);font-family:'Playfair Display',serif">
-                                      reknur
+                                      Reknur
                                     </p>
                                     <p style="font-size:0.75rem;line-height:1.3333333333333333;font-weight:400;text-transform:uppercase;letter-spacing:0.1em;margin-top:0px;margin-bottom:2rem;color:rgb(115,115,115)">
                                       Curated Excellence
@@ -446,12 +472,13 @@ export async function sendOrderStatusUpdateEmail(
                                 <tr>
                                   <td>
                                     <p style="font-size:0.875rem;line-height:1.4285714285714286;color:rgb(153,153,153);margin-top:0px;margin-bottom:0px">
-                                      Thank you for shopping with reknur. We appreciate your business.
+                                      Thank you for shopping with Reknur. We appreciate your business.
                                     </p>
                                   </td>
                                 </tr>
                               </tbody>
                             </table>
+                            ${createUnsubscribeFooter(email)}
                           </td>
                         </tr>
                       </tbody>
@@ -492,8 +519,8 @@ export async function sendShippingNotificationEmail(
     const trackingUrl = shippingDetails.trackingNumber 
       ? `${baseUrl}/account/orders/${orderId}` 
       : `${baseUrl}/account/orders/${orderId}`
-    const fromEmail = process.env.RESEND_FROM_EMAIL || "shipping@notifiers.reknur.com"
-    const from = `reknur Shipping <${fromEmail}>`
+    const fromEmail = process.env.RESEND_SHIPPING_FROM_EMAIL || process.env.RESEND_FROM_EMAIL || "shipping@notifiers.reknur.com"
+    const from = `Reknur Shipping <${fromEmail}>`
 
     const isDelivered = shippingDetails.status === "delivered"
     const title = isDelivered ? "Your Order Has Been Delivered!" : "Your Order Has Shipped!"
@@ -563,7 +590,7 @@ export async function sendShippingNotificationEmail(
                                 <tr>
                                   <td>
                                     <p style="font-size:1.875rem;line-height:1.2;margin-right:0rem;margin-left:0rem;margin-top:1rem;margin-bottom:0.5rem;padding:0rem;text-align:center;font-weight:600;color:rgb(26,26,26);font-family:'Playfair Display',serif">
-                                      reknur
+                                      Reknur
                                     </p>
                                     <p style="font-size:0.75rem;line-height:1.3333333333333333;font-weight:400;text-transform:uppercase;letter-spacing:0.1em;margin-top:0px;margin-bottom:2rem;color:rgb(115,115,115)">
                                       Curated Excellence
@@ -622,12 +649,13 @@ export async function sendShippingNotificationEmail(
                                       ${isDelivered ? "We hope you love your purchase! If you have any questions or concerns, please don't hesitate to contact us." : "Questions about your shipment? Contact our customer service team anytime."}
                                     </p>
                                     <p style="font-size:0.75rem;line-height:1.3333333333333333;color:rgb(156,163,175);margin-top:1rem;margin-bottom:0px">
-                                      Thank you for shopping with reknur
+                                      Thank you for shopping with Reknur
                                     </p>
                                   </td>
                                 </tr>
                               </tbody>
                             </table>
+                            ${createUnsubscribeFooter(email)}
                           </td>
                         </tr>
                       </tbody>
@@ -655,8 +683,8 @@ export async function sendPasswordResetEmail(email: string, token: string) {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
     const resetUrl = `${baseUrl}/auth/reset-password?token=${token}`
-    const fromEmail = process.env.RESEND_FROM_EMAIL || "reset@notifiers.reknur.com"
-    const from = `reknur <${fromEmail}>`
+    const fromEmail = process.env.RESEND_RESET_FROM_EMAIL || process.env.RESEND_FROM_EMAIL || "reset@notifiers.reknur.com"
+    const from = `Reknur <${fromEmail}>`
 
     const plainText = `Reset Your Password\n\nWe received a request to reset your password. Visit this link:\n\n${resetUrl}\n\nThis link will expire in 1 hour.`
 
@@ -673,7 +701,7 @@ export async function sendPasswordResetEmail(email: string, token: string) {
             <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
             <meta name="x-apple-disable-message-reformatting" />
           </head>
-          ${createPreheader("Reset your password for reknur")}
+          ${createPreheader("Reset your password for Reknur")}
           <body style="background-color:rgb(255,255,255)">
             <table border="0" width="100%" cellpadding="0" cellspacing="0" role="presentation" align="center">
               <tbody>
@@ -688,7 +716,7 @@ export async function sendPasswordResetEmail(email: string, token: string) {
                                 <tr>
                                   <td>
                                     <p style="font-size:1.875rem;line-height:1.2;margin-right:0rem;margin-left:0rem;margin-top:1rem;margin-bottom:0.5rem;padding:0rem;text-align:center;font-weight:600;color:rgb(26,26,26);font-family:'Playfair Display',serif">
-                                      reknur
+                                      Reknur
                                     </p>
                                     <p style="font-size:0.75rem;line-height:1.3333333333333333;font-weight:400;text-transform:uppercase;letter-spacing:0.1em;margin-top:0px;margin-bottom:2rem;color:rgb(115,115,115)">
                                       Curated Excellence
@@ -717,6 +745,7 @@ export async function sendPasswordResetEmail(email: string, token: string) {
                                 </tr>
                               </tbody>
                             </table>
+                            ${createUnsubscribeFooter(email, false)}
                           </td>
                         </tr>
                       </tbody>
