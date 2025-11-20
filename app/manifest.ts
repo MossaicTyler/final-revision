@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next"
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "reknur - Curated Excellence in Luxury Goods",
-    short_name: "reknur",
+    name: "Reknur - Curated Excellence in Luxury Goods",
+    short_name: "Reknur",
     description:
       "Discover exceptional, handcrafted luxury items curated for those who appreciate quality and craftsmanship.",
     start_url: "/",

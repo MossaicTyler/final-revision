@@ -35,12 +35,12 @@ export default function Home() {
     name: "reknur",
     description:
       "Discover exceptional, handcrafted plushies curated for those who appreciate quality and limited-edition collectibles",
-    url: process.env.NEXT_PUBLIC_BASE_URL || "https://www.rezzyfrier.vercel.app",
+    url: process.env.NEXT_PUBLIC_BASE_URL || "https://www.reknur.com",
     potentialAction: {
       "@type": "SearchAction",
       target: {
         "@type": "EntryPoint",
-        urlTemplate: `${process.env.NEXT_PUBLIC_BASE_URL || "https://www.rezzyfrier.vercel.app"}?q={search_term_string}`,
+        urlTemplate: `${process.env.NEXT_PUBLIC_BASE_URL || "https://www.reknur.com"}?q={search_term_string}`,
       },
       "query-input": "required name=search_term_string",
     },

@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next"
 import { PRODUCTS } from "@/lib/products"
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://www.rezzyfrier.vercel.app"
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://www.reknur.com"
 
   // Static pages
   const staticPages = [
