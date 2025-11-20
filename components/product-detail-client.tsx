@@ -29,14 +29,18 @@ import { LoadingSpinner } from "./loading-spinner"
 import Checkout from "./checkout"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { useBookmarks } from "@/hooks/use-bookmarks"
-import { getSession } from "@/lib/auth"
 
 interface ProductDetailClientProps {
   product: Product
   relatedProducts: Product[]
+  isAuthenticated: boolean // Added isAuthenticated prop from server
 }
 
-export function ProductDetailClient({ product: originalProduct, relatedProducts }: ProductDetailClientProps) {
+export function ProductDetailClient({
+  product: originalProduct,
+  relatedProducts,
+  isAuthenticated,
+}: ProductDetailClientProps) {
   const { region, getLocalizedProduct } = useRegion()
   const product = getLocalizedProduct(originalProduct)
 
@@ -46,21 +50,12 @@ export function ProductDetailClient({ product: originalProduct, relatedProducts 
   const [showCheckout, setShowCheckout] = useState(false)
   const [imageZoom, setImageZoom] = useState(false)
   const [showStickyBar, setShowStickyBar] = useState(false)
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
 
   const {
     isBookmarked,
     isLoading: isBookmarkLoading,
     toggleBookmark,
   } = useBookmarks(originalProduct.id, isAuthenticated)
-
-  useEffect(() => {
-    async function checkAuth() {
-      const session = await getSession()
-      setIsAuthenticated(!!session?.userId)
-    }
-    checkAuth()
-  }, [])
 
   useEffect(() => {
     async function fetchStock() {
