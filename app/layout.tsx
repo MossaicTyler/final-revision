@@ -39,22 +39,22 @@ const baseUrl =
 export const metadata: Metadata = {
   ...(baseUrl && baseUrl !== "http://localhost:3000" ? { metadataBase: new URL(baseUrl) } : {}),
   title: {
-    default: "reknur - Curated Excellence in Luxury Goods",
+    default: "Reknur - Curated Excellence in Luxury Goods",
     template: "%s | reknur",
   },
   description:
-    "Discover exceptional, handcrafted luxury items curated for those who appreciate quality and craftsmanship. Shop premium home goods, accessories, and artisan products.",
+    "Discover exceptional, handcrafted luxury items curated for those who appreciate quality and craftsmanship. Shop accessories, and curated products.",
   keywords: [
-    "luxury goods",
-    "handcrafted items",
-    "artisan products",
-    "premium home goods",
+    "luxury",
+    "handcrafted",
+    "premium plushies",
+    "adorable",
     "curated shopping",
     "quality craftsmanship",
   ],
-  authors: [{ name: "reknur" }],
-  creator: "reknur",
-  publisher: "reknur",
+  authors: [{ name: "Reknur" }],
+  creator: "Reknur",
+  publisher: "Reknur",
   formatDetection: {
     email: false,
     address: false,
@@ -64,24 +64,24 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_GB",
     siteName: "reknur",
-    title: "reknur - Curated Excellence in Luxury Goods",
+    title: "Reknur - Curated Excellence in Luxury Goods",
     description:
-      "Discover exceptional, handcrafted luxury items curated for those who appreciate quality and craftsmanship.",
+      "Discover exceptional, plushies curated for those who appreciate quality and craftsmanship.",
     images: [
       {
-        url: "/og-image.jpg",
-        width: 1200,
-        height: 630,
-        alt: "reknur - Curated Excellence",
+        url: "/hero.jpg",
+        width: 800,
+        height: 800,
+        alt: "Reknur - Curated Excellence",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "reknur - Curated Excellence in Luxury Goods",
+    title: "Reknur - Curated Excellence in Luxury Goods",
     description:
-      "Discover exceptional, handcrafted luxury items curated for those who appreciate quality and craftsmanship.",
-    images: ["/og-image.jpg"],
+      "Discover exceptional, plushies curated for those who appreciate quality and craftsmanship.",
+    images: ["/hero.jpg"],
   },
   robots: {
     index: true,

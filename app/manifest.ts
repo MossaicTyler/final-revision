@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "Reknur - Curated Excellence in Luxury Goods",
     short_name: "Reknur",
     description:
-      "Discover exceptional, handcrafted luxury items curated for those who appreciate quality and craftsmanship.",
+      "Discover exceptional, handcrafted plushies items curated for those who appreciate quality and craftsmanship.",
     start_url: "/",
     display: "standalone",
     background_color: "#ffffff",

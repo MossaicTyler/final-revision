@@ -32,7 +32,7 @@ export default function Home() {
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    name: "reknur",
+    name: "Reknur",
     description:
       "Discover exceptional, handcrafted plushies curated for those who appreciate quality and limited-edition collectibles",
     url: process.env.NEXT_PUBLIC_BASE_URL || "https://www.reknur.com",
