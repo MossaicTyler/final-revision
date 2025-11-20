@@ -42,6 +42,39 @@ export function ProductCard({ product: originalProduct, onCartOpen }: ProductCar
     fetchStock()
   }, [originalProduct.id])
 
+  useEffect(() => {
+    const productImages = product.images || ["/placeholder.svg"]
+    const hasMultipleImages = productImages.length > 1
+
+    if (!hasMultipleImages || isPaused) {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+        intervalRef.current = null
+      }
+      return
+    }
+
+    intervalRef.current = setInterval(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % productImages.length)
+    }, 1200)
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+      }
+    }
+  }, [product.images, isPaused])
+
+  useEffect(() => {
+    if (isHovering && isPaused) {
+      setIsPaused(false)
+      if (pauseTimeoutRef.current) {
+        clearTimeout(pauseTimeoutRef.current)
+        pauseTimeoutRef.current = null
+      }
+    }
+  }, [isHovering, isPaused])
+
   const formattedPrice = new Intl.NumberFormat(region.locale, {
     style: "currency",
     currency: region.currency,
