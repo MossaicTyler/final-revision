@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-
+import Link from "next/link"
 import { useState, useTransition, useEffect, useRef } from "react"
 import Image from "next/image"
 import { Card, CardContent } from "@/components/ui/card"
@@ -11,7 +11,7 @@ import type { Product } from "@/lib/products"
 import Checkout from "./checkout"
 import { addToCart } from "@/app/actions/cart"
 import { getProductStock } from "@/lib/inventory"
-import { ShoppingCart, Tag, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ShoppingCart, Tag, ChevronLeft, ChevronRight, ArrowUpRight } from "lucide-react"
 import { LoadingSpinner } from "./loading-spinner"
 import { useRegion } from "@/contexts/region-context"
 
@@ -148,7 +148,7 @@ export function ProductCard({ product: originalProduct, onCartOpen }: ProductCar
   return (
     <>
       <Card
-        className="group overflow-hidden border-border/50 hover:border-primary/20 transition-all duration-300 h-full flex flex-col cursor-pointer"
+        className="group overflow-hidden border-border/50 hover:border-primary/20 transition-all duration-300 h-full flex flex-col cursor-pointer relative"
         onClick={handleCardClick}
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => setIsHovering(false)}
@@ -161,6 +161,14 @@ export function ProductCard({ product: originalProduct, onCartOpen }: ProductCar
               fill
               className="object-cover transition-transform duration-500 group-hover:scale-105"
             />
+            <Link
+              href={`/products/${originalProduct.id}`}
+              onClick={(e) => e.stopPropagation()}
+              className="absolute top-3 left-3 z-10 bg-background/80 backdrop-blur-sm hover:bg-background border border-border rounded-full p-2 opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110"
+              aria-label="View product page"
+            >
+              <ArrowUpRight className="h-4 w-4" />
+            </Link>
             {isSoldOut ? (
               <div className="absolute top-3 right-3 bg-destructive text-destructive-foreground px-3 py-1 rounded-full font-semibold shadow-lg text-sm">
                 SOLD OUT
