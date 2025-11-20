@@ -24,6 +24,7 @@ import {
   Sparkles,
   Home,
   LucideCircleArrowUp as BreadcrumbArrow,
+  Zap,
 } from "lucide-react"
 import { LoadingSpinner } from "./loading-spinner"
 import Checkout from "./checkout"
@@ -43,6 +44,7 @@ export function ProductDetailClient({ product: originalProduct, relatedProducts 
   const [isAddingToCart, setIsAddingToCart] = useState(false)
   const [showCheckout, setShowCheckout] = useState(false)
   const [imageZoom, setImageZoom] = useState(false)
+  const [showStickyBar, setShowStickyBar] = useState(false)
 
   useEffect(() => {
     async function fetchStock() {
@@ -51,6 +53,14 @@ export function ProductDetailClient({ product: originalProduct, relatedProducts 
     }
     fetchStock()
   }, [originalProduct.id])
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowStickyBar(window.scrollY > 300)
+    }
+    window.addEventListener("scroll", handleScroll)
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [])
 
   const productImages = product.images || ["/placeholder.svg"]
   const isSoldOut = stock !== null && stock === 0
@@ -119,15 +129,13 @@ export function ProductDetailClient({ product: originalProduct, relatedProducts 
         console.log("Share cancelled")
       }
     } else {
-      // Fallback: copy to clipboard
       navigator.clipboard.writeText(window.location.href)
       alert("Link copied to clipboard!")
     }
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Breadcrumb Navigation */}
+    <div className="min-h-screen bg-background pb-24">
       <div className="border-b border-border/50 bg-muted/20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <nav className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -145,12 +153,9 @@ export function ProductDetailClient({ product: originalProduct, relatedProducts 
         </div>
       </div>
 
-      {/* Product Details Section */}
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
-          {/* Image Gallery */}
           <div className="space-y-4">
-            {/* Main Image */}
             <div className="relative aspect-square overflow-hidden rounded-2xl bg-muted border border-border/50">
               <Image
                 src={productImages[currentImageIndex] || "/placeholder.svg"}
@@ -197,7 +202,6 @@ export function ProductDetailClient({ product: originalProduct, relatedProducts 
               )}
             </div>
 
-            {/* Thumbnail Gallery */}
             {productImages.length > 1 && (
               <div className="grid grid-cols-4 gap-3">
                 {productImages.map((image, index) => (
@@ -222,20 +226,15 @@ export function ProductDetailClient({ product: originalProduct, relatedProducts 
             )}
           </div>
 
-          {/* Product Information */}
           <div className="space-y-6">
-            {/* Category Badge */}
             <Badge variant="secondary" className="text-xs font-medium tracking-wider uppercase">
               {product.category}
             </Badge>
 
-            {/* Product Name */}
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-serif text-balance leading-tight">{product.name}</h1>
 
-            {/* Short Description */}
             <p className="text-lg text-muted-foreground leading-relaxed">{product.description}</p>
 
-            {/* Price */}
             <div className="flex items-baseline gap-4 py-4 border-y border-border/50">
               {formattedOriginalPrice && (
                 <p className="text-2xl text-muted-foreground line-through">{formattedOriginalPrice}</p>
@@ -245,7 +244,6 @@ export function ProductDetailClient({ product: originalProduct, relatedProducts 
               </p>
             </div>
 
-            {/* Stock Status */}
             {stock !== null && (
               <div className="space-y-2">
                 {stock === 0 ? (
@@ -267,7 +265,6 @@ export function ProductDetailClient({ product: originalProduct, relatedProducts 
               </div>
             )}
 
-            {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-3 pt-4">
               <Button
                 size="lg"
@@ -298,7 +295,6 @@ export function ProductDetailClient({ product: originalProduct, relatedProducts 
               </Button>
             </div>
 
-            {/* Secondary Actions */}
             <div className="flex gap-2">
               <Button variant="outline" size="sm" className="flex-1 bg-transparent" onClick={handleShare}>
                 <Share2 className="h-4 w-4 mr-2" />
@@ -310,7 +306,6 @@ export function ProductDetailClient({ product: originalProduct, relatedProducts 
               </Button>
             </div>
 
-            {/* Product Features */}
             <Card className="border-border/50 bg-muted/30 p-6 space-y-4">
               <h3 className="font-semibold text-lg mb-4">Why You'll Love This</h3>
               <div className="space-y-4">
@@ -340,13 +335,11 @@ export function ProductDetailClient({ product: originalProduct, relatedProducts 
               </div>
             </Card>
 
-            {/* Product Details */}
             <div className="space-y-4 pt-6 border-t border-border/50">
               <h3 className="font-semibold text-xl">Product Details</h3>
               <p className="text-base text-muted-foreground leading-relaxed">{product.details}</p>
             </div>
 
-            {/* Additional Information */}
             <div className="space-y-3 text-sm text-muted-foreground pt-4 border-t border-border/50">
               <div className="flex justify-between">
                 <span>Category:</span>
@@ -366,9 +359,7 @@ export function ProductDetailClient({ product: originalProduct, relatedProducts 
           </div>
         </div>
 
-        {/* Marketing Content Section */}
         <div className="mt-16 lg:mt-24 space-y-12">
-          {/* Why Choose reknur */}
           <section className="bg-gradient-to-br from-muted/50 to-background rounded-3xl p-8 sm:p-12 border border-border/50">
             <div className="max-w-3xl mx-auto text-center space-y-6">
               <h2 className="text-3xl sm:text-4xl font-serif">Why Choose reknur</h2>
@@ -396,7 +387,6 @@ export function ProductDetailClient({ product: originalProduct, relatedProducts 
             </div>
           </section>
 
-          {/* Care Instructions */}
           <section className="space-y-6">
             <h2 className="text-2xl sm:text-3xl font-serif">Care Instructions</h2>
             <Card className="border-border/50 p-6 sm:p-8">
@@ -422,7 +412,6 @@ export function ProductDetailClient({ product: originalProduct, relatedProducts 
           </section>
         </div>
 
-        {/* Related Products */}
         {relatedProducts.length > 0 && (
           <section className="mt-16 lg:mt-24 space-y-8">
             <div className="text-center space-y-2">
@@ -438,7 +427,76 @@ export function ProductDetailClient({ product: originalProduct, relatedProducts 
         )}
       </div>
 
-      {/* Checkout Dialog */}
+      <div
+        className={`fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-t border-border shadow-lg transition-transform duration-300 ${
+          showStickyBar ? "translate-y-0" : "translate-y-full"
+        }`}
+      >
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between gap-4 py-3 sm:py-4">
+            <div className="flex items-center gap-4 min-w-0">
+              <div className="relative h-12 w-12 sm:h-16 sm:w-16 rounded-lg overflow-hidden border border-border flex-shrink-0">
+                <Image src={productImages[0] || "/placeholder.svg"} alt={product.name} fill className="object-cover" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h3 className="font-semibold text-sm sm:text-base truncate">{product.name}</h3>
+                <div className="flex items-center gap-2">
+                  {formattedOriginalPrice && (
+                    <p className="text-xs sm:text-sm text-muted-foreground line-through">{formattedOriginalPrice}</p>
+                  )}
+                  <p
+                    className={`text-sm sm:text-lg font-serif ${originalProduct.onSale ? "text-red-600 dark:text-red-400" : ""}`}
+                  >
+                    {formattedPrice}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="flex gap-2 flex-shrink-0">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleAddToCart}
+                disabled={isAddingToCart || isSoldOut}
+                className="hidden sm:flex disabled:opacity-50 disabled:cursor-not-allowed bg-transparent"
+              >
+                {isAddingToCart ? (
+                  <LoadingSpinner size="small" />
+                ) : (
+                  <>
+                    <ShoppingCart className="h-4 w-4 mr-2" />
+                    {isSoldOut ? "Sold Out" : "Add to Cart"}
+                  </>
+                )}
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleAddToCart}
+                disabled={isAddingToCart || isSoldOut}
+                className="sm:hidden disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isAddingToCart ? (
+                  <LoadingSpinner size="small" />
+                ) : (
+                  <>
+                    <ShoppingCart className="h-4 w-4" />
+                  </>
+                )}
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => setShowCheckout(true)}
+                disabled={isSoldOut}
+                className="disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Zap className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">{isSoldOut ? "Sold Out" : "Buy Now"}</span>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <Dialog open={showCheckout} onOpenChange={setShowCheckout}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
