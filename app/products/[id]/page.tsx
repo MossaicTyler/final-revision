@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation"
 import { getProductById, PRODUCTS, getProductsByCategory } from "@/lib/products"
 import { ProductDetailClient } from "@/components/product-detail-client"
+import { getCurrentUser } from "@/lib/auth"
 import type { Metadata } from "next"
 
 interface ProductPageProps {
@@ -58,12 +59,15 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   }
 }
 
-export default function ProductPage({ params }: ProductPageProps) {
+export default async function ProductPage({ params }: ProductPageProps) {
   const product = getProductById(params.id)
 
   if (!product) {
     notFound()
   }
+
+  const user = await getCurrentUser()
+  const isAuthenticated = !!user
 
   // Get related products from the same category
   const relatedProducts = getProductsByCategory(product.category)
@@ -92,7 +96,7 @@ export default function ProductPage({ params }: ProductPageProps) {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
-      <ProductDetailClient product={product} relatedProducts={relatedProducts} />
+      <ProductDetailClient product={product} relatedProducts={relatedProducts} isAuthenticated={isAuthenticated} />
     </>
   )
 }
