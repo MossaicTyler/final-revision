@@ -11,7 +11,7 @@ import type { Product } from "@/lib/products"
 import Checkout from "./checkout"
 import { addToCart } from "@/app/actions/cart"
 import { getProductStock } from "@/lib/inventory"
-import { ShoppingCart, Tag, ChevronLeft, ChevronRight, ArrowUpRight } from "lucide-react"
+import { ShoppingCart, Tag, ChevronLeft, ChevronRight } from "lucide-react"
 import { LoadingSpinner } from "./loading-spinner"
 import { useRegion } from "@/contexts/region-context"
 
@@ -83,44 +83,6 @@ export function ProductCard({ product: originalProduct, onCartOpen }: ProductCar
     })
   }
 
-  function handleCardClick() {
-    setShowDetails(true)
-  }
-
-  const productImages = product.images || ["/placeholder.svg"]
-  const hasMultipleImages = productImages.length > 1
-
-  useEffect(() => {
-    if (isHovering && hasMultipleImages && !isPaused) {
-      intervalRef.current = setInterval(() => {
-        setCurrentImageIndex((prev) => (prev + 1) % productImages.length)
-      }, 1200)
-    } else {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
-        intervalRef.current = null
-      }
-      if (!isHovering) {
-        setCurrentImageIndex(0)
-        setIsPaused(false)
-      }
-    }
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
-      }
-    }
-  }, [isHovering, hasMultipleImages, productImages.length, isPaused])
-
-  useEffect(() => {
-    return () => {
-      if (pauseTimeoutRef.current) {
-        clearTimeout(pauseTimeoutRef.current)
-      }
-    }
-  }, [])
-
   const nextImage = (e: React.MouseEvent) => {
     e.stopPropagation()
     setCurrentImageIndex((prev) => (prev + 1) % productImages.length)
@@ -145,61 +107,39 @@ export function ProductCard({ product: originalProduct, onCartOpen }: ProductCar
     }, 10000)
   }
 
+  const productImages = product.images || ["/placeholder.svg"]
+  const hasMultipleImages = productImages.length > 1
+
   return (
     <>
-      <Card
-        className="group overflow-hidden border-border/50 hover:border-primary/20 transition-all duration-300 h-full flex flex-col cursor-pointer relative"
-        onClick={handleCardClick}
-        onMouseEnter={() => setIsHovering(true)}
-        onMouseLeave={() => setIsHovering(false)}
-      >
-        <CardContent className="p-0 flex flex-col h-full">
-          <div className="relative aspect-[4/5] overflow-hidden bg-muted">
-            <Image
-              src={productImages[currentImageIndex] || "/placeholder.svg"}
-              alt={product.name}
-              fill
-              className="object-cover transition-transform duration-500 group-hover:scale-105"
-            />
-            <Link
-              href={`/products/${originalProduct.id}`}
-              onClick={(e) => e.stopPropagation()}
-              className="absolute top-3 left-3 z-10 bg-background/80 backdrop-blur-sm hover:bg-background border border-border rounded-full p-2 opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110"
-              aria-label="View product page"
-            >
-              <ArrowUpRight className="h-4 w-4" />
-            </Link>
-            {isSoldOut ? (
-              <div className="absolute top-3 right-3 bg-destructive text-destructive-foreground px-3 py-1 rounded-full font-semibold shadow-lg text-sm">
-                SOLD OUT
-              </div>
-            ) : (
-              product.onSale &&
-              discountPercentage && (
-                <div className="absolute top-3 right-3 bg-destructive text-destructive-foreground px-3 py-1 rounded-full font-semibold flex items-center gap-1 shadow-lg text-sm">
-                  <Tag className="h-3 w-3" />
-                  {discountPercentage}% OFF
+      <Link href={`/products/${originalProduct.id}`} className="block h-full">
+        <Card
+          className="group overflow-hidden border-border/50 hover:border-primary/20 transition-all duration-300 h-full flex flex-col cursor-pointer relative"
+          onMouseEnter={() => setIsHovering(true)}
+          onMouseLeave={() => setIsHovering(false)}
+        >
+          <CardContent className="p-0 flex flex-col h-full">
+            <div className="relative aspect-[4/5] overflow-hidden bg-muted">
+              <Image
+                src={productImages[currentImageIndex] || "/placeholder.svg"}
+                alt={product.name}
+                fill
+                className="object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+              {isSoldOut ? (
+                <div className="absolute top-3 right-3 bg-destructive text-destructive-foreground px-3 py-1 rounded-full font-semibold shadow-lg text-sm">
+                  SOLD OUT
                 </div>
-              )
-            )}
-            {hasMultipleImages && (
-              <>
-                <Button
-                  variant="secondary"
-                  size="icon"
-                  className="absolute left-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full opacity-0 group-hover:opacity-80 hover:opacity-100 transition-opacity"
-                  onClick={prevImage}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="icon"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full opacity-0 group-hover:opacity-80 hover:opacity-100 transition-opacity"
-                  onClick={nextImage}
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
+              ) : (
+                product.onSale &&
+                discountPercentage && (
+                  <div className="absolute top-3 right-3 bg-destructive text-destructive-foreground px-3 py-1 rounded-full font-semibold flex items-center gap-1 shadow-lg text-sm">
+                    <Tag className="h-3 w-3" />
+                    {discountPercentage}% OFF
+                  </div>
+                )
+              )}
+              {hasMultipleImages && (
                 <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
                   {productImages.map((_, index) => (
                     <div
@@ -210,70 +150,73 @@ export function ProductCard({ product: originalProduct, onCartOpen }: ProductCar
                     />
                   ))}
                 </div>
-              </>
-            )}
-          </div>
-          <div className="p-4 sm:p-6 space-y-3 sm:space-y-4 flex-1 flex flex-col">
-            <div className="space-y-2 flex-1">
-              <p className="text-xs font-medium text-muted-foreground tracking-wider uppercase">{product.category}</p>
-              <h3 className="text-lg sm:text-xl font-serif text-balance leading-tight">{product.name}</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">{product.description}</p>
+              )}
             </div>
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2">
-              <div className="flex flex-col">
-                {product.onSale && formattedOriginalPrice && (
-                  <p className="text-sm text-muted-foreground line-through">{formattedOriginalPrice}</p>
-                )}
-                <p
-                  className={`text-xl sm:text-2xl font-serif ${product.onSale ? "text-red-600 dark:text-red-400" : ""}`}
-                >
-                  {formattedPrice}
-                </p>
+            <div className="p-4 sm:p-6 space-y-3 sm:space-y-4 flex-1 flex flex-col">
+              <div className="space-y-2 flex-1">
+                <p className="text-xs font-medium text-muted-foreground tracking-wider uppercase">{product.category}</p>
+                <h3 className="text-lg sm:text-xl font-serif text-balance leading-tight">{product.name}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">{product.description}</p>
               </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setShowDetails(true)
-                  }}
-                  className="flex-1 sm:flex-none hover:bg-muted hover:border-primary/40 hover:text-muted-background"
-                >
-                  Details
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleAddToCart}
-                  disabled={isPending || isSoldOut}
-                  className="flex-1 sm:flex-none hover:bg-muted hover:border-primary/40 hover:text-muted-background bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isPending ? (
-                    <LoadingSpinner size="small" />
-                  ) : (
-                    <>
-                      <ShoppingCart className="h-4 w-4 sm:mr-1" />
-                      <span className="hidden sm:inline">{isSoldOut ? "Sold Out" : "Add"}</span>
-                    </>
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2">
+                <div className="flex flex-col">
+                  {product.onSale && formattedOriginalPrice && (
+                    <p className="text-sm text-muted-foreground line-through">{formattedOriginalPrice}</p>
                   )}
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setShowCheckout(true)
-                  }}
-                  disabled={isSoldOut}
-                  className="hidden sm:inline-flex border hover:border-accent-foreground/40 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isSoldOut ? "Sold Out" : "Buy Now"}
-                </Button>
+                  <p
+                    className={`text-xl sm:text-2xl font-serif ${product.onSale ? "text-red-600 dark:text-red-400" : ""}`}
+                  >
+                    {formattedPrice}
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      setShowDetails(true)
+                      setCurrentImageIndex(0)
+                    }}
+                    className="flex-1 sm:flex-none hover:bg-muted hover:border-primary/40 hover:text-muted-background"
+                  >
+                    Details
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleAddToCart}
+                    disabled={isPending || isSoldOut}
+                    className="flex-1 sm:flex-none hover:bg-muted hover:border-primary/40 hover:text-muted-background bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isPending ? (
+                      <LoadingSpinner size="small" />
+                    ) : (
+                      <>
+                        <ShoppingCart className="h-4 w-4 sm:mr-1" />
+                        <span className="hidden sm:inline">{isSoldOut ? "Sold Out" : "Add"}</span>
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      setShowCheckout(true)
+                    }}
+                    disabled={isSoldOut}
+                    className="hidden sm:inline-flex border hover:border-accent-foreground/40 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isSoldOut ? "Sold Out" : "Buy Now"}
+                  </Button>
+                </div>
               </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </Link>
 
       {/* Product Details Dialog */}
       <Dialog

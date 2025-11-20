@@ -20,6 +20,7 @@ function setGuestBookmarks(bookmarks: string[]) {
   if (typeof window === "undefined") return
   try {
     localStorage.setItem(GUEST_BOOKMARKS_KEY, JSON.stringify(bookmarks))
+    window.dispatchEvent(new CustomEvent("bookmarksChanged"))
   } catch (error) {
     console.error("Failed to save guest bookmarks:", error)
   }
@@ -42,6 +43,16 @@ export function useBookmarks(productId: string, isAuthenticated: boolean) {
     }
 
     loadBookmarkStatus()
+
+    if (!isAuthenticated) {
+      const handleBookmarkChange = () => {
+        const guestBookmarks = getGuestBookmarks()
+        setIsBookmarked(guestBookmarks.includes(productId))
+      }
+
+      window.addEventListener("bookmarksChanged", handleBookmarkChange)
+      return () => window.removeEventListener("bookmarksChanged", handleBookmarkChange)
+    }
   }, [productId, isAuthenticated])
 
   async function toggleBookmark() {

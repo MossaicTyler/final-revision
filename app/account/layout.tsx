@@ -4,7 +4,7 @@ import { redirect } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { signOut } from "@/app/actions/auth"
-import { Package, Settings, LogOut } from "lucide-react"
+import { Package, Settings, LogOut, Heart } from "lucide-react"
 
 export default async function AccountLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser()
@@ -29,6 +29,12 @@ export default async function AccountLayout({ children }: { children: React.Reac
                 <Button variant="ghost" className="w-full justify-start">
                   <Package className="h-4 w-4 mr-2" />
                   Orders
+                </Button>
+              </Link>
+              <Link href="/account/bookmarks">
+                <Button variant="ghost" className="w-full justify-start">
+                  <Heart className="h-4 w-4 mr-2" />
+                  Saved Items
                 </Button>
               </Link>
               <Link href="/account/settings">
