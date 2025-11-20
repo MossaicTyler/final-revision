@@ -112,6 +112,7 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
   return verifySession(token)
 }
 
+// Get current user details from session
 export async function getCurrentUserWithDetails() {
   const user = await getCurrentUser()
   if (!user) return null
@@ -123,6 +124,13 @@ export async function getCurrentUserWithDetails() {
   `
 
   return result[0] || null
+}
+
+export async function getSession(): Promise<{ userId: string } | null> {
+  const user = await getCurrentUser()
+  if (!user) return null
+
+  return { userId: user.id }
 }
 
 // Set session cookie

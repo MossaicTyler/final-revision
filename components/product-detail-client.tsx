@@ -24,11 +24,12 @@ import {
   Sparkles,
   Home,
   LucideCircleArrowUp as BreadcrumbArrow,
-  Zap,
 } from "lucide-react"
 import { LoadingSpinner } from "./loading-spinner"
 import Checkout from "./checkout"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
+import { useBookmarks } from "@/hooks/use-bookmarks"
+import { getSession } from "@/lib/auth"
 
 interface ProductDetailClientProps {
   product: Product
@@ -45,6 +46,21 @@ export function ProductDetailClient({ product: originalProduct, relatedProducts 
   const [showCheckout, setShowCheckout] = useState(false)
   const [imageZoom, setImageZoom] = useState(false)
   const [showStickyBar, setShowStickyBar] = useState(false)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+
+  const {
+    isBookmarked,
+    isLoading: isBookmarkLoading,
+    toggleBookmark,
+  } = useBookmarks(originalProduct.id, isAuthenticated)
+
+  useEffect(() => {
+    async function checkAuth() {
+      const session = await getSession()
+      setIsAuthenticated(!!session?.userId)
+    }
+    checkAuth()
+  }, [])
 
   useEffect(() => {
     async function fetchStock() {
@@ -131,6 +147,15 @@ export function ProductDetailClient({ product: originalProduct, relatedProducts 
     } else {
       navigator.clipboard.writeText(window.location.href)
       alert("Link copied to clipboard!")
+    }
+  }
+
+  async function handleToggleBookmark() {
+    await toggleBookmark()
+
+    if (!isAuthenticated) {
+      const message = isBookmarked ? "Removed from saved items" : "Saved! Sign in to sync across devices"
+      console.log(message)
     }
   }
 
@@ -300,9 +325,15 @@ export function ProductDetailClient({ product: originalProduct, relatedProducts 
                 <Share2 className="h-4 w-4 mr-2" />
                 Share
               </Button>
-              <Button variant="outline" size="sm" className="flex-1 bg-transparent">
-                <Heart className="h-4 w-4 mr-2" />
-                Save
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1 bg-transparent"
+                onClick={handleToggleBookmark}
+                disabled={isBookmarkLoading}
+              >
+                <Heart className={`h-4 w-4 mr-2 ${isBookmarked ? "fill-current text-red-500" : ""}`} />
+                {isBookmarked ? "Saved" : "Save"}
               </Button>
             </div>
 
@@ -471,26 +502,11 @@ export function ProductDetailClient({ product: originalProduct, relatedProducts 
               </Button>
               <Button
                 size="sm"
-                onClick={handleAddToCart}
-                disabled={isAddingToCart || isSoldOut}
-                className="sm:hidden disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isAddingToCart ? (
-                  <LoadingSpinner size="small" />
-                ) : (
-                  <>
-                    <ShoppingCart className="h-4 w-4" />
-                  </>
-                )}
-              </Button>
-              <Button
-                size="sm"
                 onClick={() => setShowCheckout(true)}
                 disabled={isSoldOut}
                 className="disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Zap className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">{isSoldOut ? "Sold Out" : "Buy Now"}</span>
+                {isSoldOut ? "Sold Out" : "Buy Now"}
               </Button>
             </div>
           </div>
