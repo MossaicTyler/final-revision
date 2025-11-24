@@ -290,7 +290,7 @@ export function ProductDetailClient({
                 size="lg"
                 onClick={handleAddToCart}
                 disabled={isAddingToCart || isSoldOut}
-                className="flex-1 text-base sm:text-base md:text-lg h-12 sm:h-11 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 text-lg sm:text-base h-14 sm:h-12 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isAddingToCart ? (
                   <>
@@ -299,7 +299,7 @@ export function ProductDetailClient({
                   </>
                 ) : (
                   <>
-                    <ShoppingCart className="h-5 w-5 mr-2" />
+                    <ShoppingCart className="h-5 w-5 sm:h-5 sm:w-5 mr-2" />
                     {isSoldOut ? "Sold Out" : "Add to Cart"}
                   </>
                 )}
@@ -309,7 +309,7 @@ export function ProductDetailClient({
                 variant="outline"
                 onClick={() => setShowCheckout(true)}
                 disabled={isSoldOut}
-                className="flex-1 text-base sm:text-base md:text-lg h-12 sm:h-11 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 text-lg sm:text-base h-14 sm:h-12 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSoldOut ? "Sold Out" : "Buy Now"}
               </Button>
