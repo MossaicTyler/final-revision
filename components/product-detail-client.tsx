@@ -290,7 +290,7 @@ export function ProductDetailClient({
                 size="lg"
                 onClick={handleAddToCart}
                 disabled={isAddingToCart || isSoldOut}
-                className="flex-1 text-base disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 text-base sm:text-base md:text-lg h-12 sm:h-11 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isAddingToCart ? (
                   <>
@@ -309,7 +309,7 @@ export function ProductDetailClient({
                 variant="outline"
                 onClick={() => setShowCheckout(true)}
                 disabled={isSoldOut}
-                className="flex-1 text-base disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 text-base sm:text-base md:text-lg h-12 sm:h-11 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSoldOut ? "Sold Out" : "Buy Now"}
               </Button>
