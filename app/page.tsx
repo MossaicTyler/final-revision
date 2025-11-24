@@ -3,15 +3,19 @@
 import { PRODUCTS, getAllCategories } from "@/lib/products"
 import { ProductCard } from "@/components/product-card"
 import { useState, useRef, useEffect, Suspense } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { AdminAccessError } from "@/components/admin-access-error"
 
 const PRODUCTS_PER_PAGE = 6
 
-export default function Home() {
+function HomeContent() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const categories = getAllCategories()
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(searchParams.get("category"))
   const [currentPage, setCurrentPage] = useState(1)
   const heroRef = useRef<HTMLElement>(null)
   const titleRef = useRef<HTMLHeadingElement>(null)
@@ -32,15 +36,15 @@ export default function Home() {
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    name: "Reknur",
+    name: "reknur",
     description:
       "Discover exceptional, handcrafted plushies curated for those who appreciate quality and limited-edition collectibles",
-    url: process.env.NEXT_PUBLIC_BASE_URL || "https://www.reknur.com",
+    url: process.env.NEXT_PUBLIC_BASE_URL || "https://www.rezzyfrier.vercel.app",
     potentialAction: {
       "@type": "SearchAction",
       target: {
         "@type": "EntryPoint",
-        urlTemplate: `${process.env.NEXT_PUBLIC_BASE_URL || "https://www.reknur.com"}?q={search_term_string}`,
+        urlTemplate: `${process.env.NEXT_PUBLIC_BASE_URL || "https://www.rezzyfrier.vercel.app"}?q={search_term_string}`,
       },
       "query-input": "required name=search_term_string",
     },
@@ -51,8 +55,12 @@ export default function Home() {
   }, [selectedCategory])
 
   useEffect(() => {
+    const categoryFromUrl = searchParams.get("category")
+    setSelectedCategory(categoryFromUrl)
+  }, [searchParams])
+
+  useEffect(() => {
     const animateHeroText = () => {
-      // Title appears first
       setTimeout(() => {
         if (titleRef.current) {
           titleRef.current.style.opacity = "1"
@@ -60,7 +68,6 @@ export default function Home() {
         }
       }, 300)
 
-      // Subtitle appears second
       setTimeout(() => {
         if (subtitleRef.current) {
           subtitleRef.current.style.opacity = "1"
@@ -68,7 +75,6 @@ export default function Home() {
         }
       }, 900)
 
-      // Button appears last
       setTimeout(() => {
         if (buttonRef.current) {
           buttonRef.current.style.opacity = "1"
@@ -87,19 +93,21 @@ export default function Home() {
     }
   }
 
+  const handleCategoryChange = (category: string | null) => {
+    setSelectedCategory(category)
+    if (category) {
+      router.push(`?category=${encodeURIComponent(category)}`, { scroll: false })
+    } else {
+      router.push("/", { scroll: false })
+    }
+  }
+
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
 
       <div className="min-h-screen bg-background">
-        {/* Admin Access Error Message */}
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-6">
-          <Suspense fallback={null}>
-            <AdminAccessError />
-          </Suspense>
-        </div>
 
-        {/* Hero Banner */}
         <section
           ref={heroRef}
           className="border-b border-border/50 bg-gradient-to-b from-muted/30 to-background relative overflow-hidden"
@@ -131,17 +139,15 @@ export default function Home() {
             </button>
           </div>
 
-          {/* Decorative gradient orbs */}
           <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-pulse" />
           <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-accent/5 rounded-full blur-3xl animate-pulse animation-delay-1000" />
         </section>
 
-        {/* Categories Section */}
         <section className="border-b border-border/50 sticky top-[65px] z-50 bg-background/98 backdrop-blur-sm shadow-sm">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-1 sm:py-2">
             <div className="flex justify-center gap-2 sm:gap-3 lg:gap-4 overflow-x-auto pb-2 scrollbar-hide">
               <button
-                onClick={() => setSelectedCategory(null)}
+                onClick={() => handleCategoryChange(null)}
                 className={`px-4 sm:px-5 py-2 text-xs sm:text-sm font-medium tracking-wider uppercase whitespace-nowrap border rounded-full transition-all duration-300 ${
                   selectedCategory === null
                     ? "border-primary bg-primary text-primary-foreground shadow-md"
@@ -153,7 +159,7 @@ export default function Home() {
               {categories.map((category) => (
                 <button
                   key={category}
-                  onClick={() => setSelectedCategory(category)}
+                  onClick={() => handleCategoryChange(category)}
                   className={`px-4 sm:px-5 py-2 text-xs sm:text-sm font-medium tracking-wider uppercase whitespace-nowrap border rounded-full transition-all duration-300 ${
                     selectedCategory === category
                       ? "border-primary bg-primary text-primary-foreground shadow-md"
@@ -167,7 +173,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Products Grid */}
         <section id="products-section" className="py-12 sm:py-16 lg:py-20 scroll-mt-[145px]">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-10">
@@ -218,7 +223,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Footer */}
         <footer className="border-t border-border/50 mt-16 sm:mt-20 lg:mt-24 bg-muted/20">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-10 lg:gap-12">
@@ -277,5 +281,13 @@ export default function Home() {
         </footer>
       </div>
     </>
+  )
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-background" />}>
+      <HomeContent />
+    </Suspense>
   )
 }
