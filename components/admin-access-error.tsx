@@ -1,10 +1,11 @@
 "use client"
 
+import { Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle, Shield } from "lucide-react"
 
-export function AdminAccessError() {
+function AdminAccessErrorContent() {
   const searchParams = useSearchParams()
   const error = searchParams.get("error")
   const authRequired = searchParams.get("auth")
@@ -73,4 +74,12 @@ export function AdminAccessError() {
   }
 
   return null
+}
+
+export function AdminAccessError() {
+  return (
+    <Suspense fallback={null}>
+      <AdminAccessErrorContent />
+    </Suspense>
+  )
 }
